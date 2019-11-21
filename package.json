@@ -1,0 +1,25 @@
+{
+    "name": "digital-asm",
+    "displayName": "digital-asm",
+    "description": "Plugin offering code completion, compiling, executing and single step debugging for asm files used with Digital",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.40.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "asm",
+            "aliases": ["Assembler", "asm"],
+            "extensions": [".asm",".hex"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "asm",
+            "scopeName": "source.asm",
+            "path": "./syntaxes/asm.tmLanguage.json"
+        }]
+    }
+}
