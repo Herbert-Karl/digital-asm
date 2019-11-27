@@ -25,11 +25,11 @@
 				"match": "\\b(BRCS|BREQ|BRMI|BRCC|BRNE|BRPL|RCALL|RRET|JMP|JMPs|BRK|RETI)\\b"
 			},
 			{
-				"name": "keyword.directive.asm",
+				"name": "keyword.other.directive.asm",
 				"match": "\\b(\\.reg|\\.long|\\.org|\\.const|\\.include|\\.word|\\.dorg|\\.data)\\b"
 			},
 			{
-				"name": "keyword.macro.asm",
+				"name": "keyword.other.macro.asm",
 				"match": "\\b(POP|RET|CALL|DEC|LEAVE|LEAVEI|ENTER|ENTERI|_SCALL|PUSH|INC)\\b"
 			},
 			{
