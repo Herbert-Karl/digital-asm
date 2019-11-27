@@ -22,19 +22,19 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.asm",
-				"match": "\\b(BRCS|BREQ|BRMI|BRCC|BRNE|BRPL|RCALL|RRET|JMP|JMPs|BRK|RETI)\\b"
+				"match": "\\b((?i)(BRCS|BREQ|BRMI|BRCC|BRNE|BRPL|RCALL|RRET|JMP|JMPs|BRK|RETI))\\b"
 			},
 			{
 				"name": "keyword.other.directive.asm",
-				"match": "\\b(\\.reg|\\.long|\\.org|\\.const|\\.include|\\.word|\\.dorg|\\.data)\\b"
+				"match": "\\b((?i)(\\.reg|\\.long|\\.org|\\.const|\\.include|\\.word|\\.dorg|\\.data))\\b"
 			},
 			{
 				"name": "keyword.other.macro.asm",
-				"match": "\\b(POP|RET|CALL|DEC|LEAVE|LEAVEI|ENTER|ENTERI|_SCALL|PUSH|INC)\\b"
+				"match": "\\b((?i)(POP|RET|CALL|DEC|LEAVE|LEAVEI|ENTER|ENTERI|_SCALL|PUSH|INC))\\b"
 			},
 			{
 				"name": "keyword.operator.asm",
-				"match": "\\b(NOP|MOV|ADD|ADC|SUB|SBC|AND|OR|EOR|LDI|LDIs|ADDI|ADDIs|ADCI|ADCIs|SUBI|SUBIs|SBCI|SBCIs|ANDI|ANDIs|ORI|ORIs|EORI|EORIs|MUL|MULI|MULIs|CMP|CPI|CPIs|LSL|LSR|ROL|ROR|ASR|SWAP|SWAPN|ST|LD|STS|STSs|LDS|LDSs|STD|LDD|OUT|OUTs|OUTR|IN|INs|INR)\\b"
+				"match": "\\b((?i)(NOP|MOV|ADD|ADC|SUB|SBC|AND|OR|EOR|LDI|LDIs|ADDI|ADDIs|ADCI|ADCIs|SUBI|SUBIs|SBCI|SBCIs|ANDI|ANDIs|ORI|ORIs|EORI|EORIs|MUL|MULI|MULIs|CMP|CPI|CPIs|LSL|LSR|ROL|ROR|ASR|SWAP|SWAPN|ST|LD|STS|STSs|LDS|LDSs|STD|LDD|OUT|OUTs|OUTR|IN|INs|INR))\\b"
 			}
 		]
 		},
