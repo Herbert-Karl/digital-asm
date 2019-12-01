@@ -4,6 +4,6 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## 0.1.0 - 01.12.2019
 
-- Initial release
+* basic Language Grammar Definition
