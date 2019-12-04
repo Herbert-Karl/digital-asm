@@ -1,5 +1,7 @@
 # digital-asm 
 
+[![](https://vsmarketplacebadge.apphb.com/version/Herbert-Karl.digital-asm.svg)](https://marketplace.visualstudio.com/items?itemName=Herbert-Karl.digital-asm)
+
 This VS Code Plugin provides support for Assembler files for the _digital logic designer and circuit simulator_ [Digital](https://github.com/hneemann/Digital).
 
 ## Features
@@ -8,7 +10,7 @@ This VS Code Plugin provides support for Assembler files for the _digital logic 
 
 ## Requirements
 
-Circuit simulator [Digital](https://github.com/hneemann/Digital) ...
+Circuit simulator [Digital](https://github.com/hneemann/Digital) and [Assembler](https://github.com/hneemann/Assembler) for the digital processor. 
 
 ## Extension Settings
 
@@ -23,13 +25,8 @@ This extension contributes the following settings:
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Chars not recognized.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
+please check CHANGELOG.md file for release notes.
