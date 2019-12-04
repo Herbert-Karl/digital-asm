@@ -2,10 +2,13 @@
     "name": "digital-asm",
     "displayName": "Digital Assembler",
     "description": "Plugin offering code completion, compiling, executing and single step debugging for asm files used with Digital",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "Herbert-Karl",
     "author": {
         "name": "Herbert Bärschneider"
+    },
+    "repository": {
+        "url": "https://github.com/Herbert-Karl/digital-asm.git"
     },
     "engines": {
         "vscode": "^1.40.0"
