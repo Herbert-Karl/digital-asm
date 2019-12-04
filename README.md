@@ -3,6 +3,7 @@
 [![](https://vsmarketplacebadge.apphb.com/version/Herbert-Karl.digital-asm.svg)](https://marketplace.visualstudio.com/items?itemName=Herbert-Karl.digital-asm)
 
 This VS Code Plugin provides support for Assembler files for the _digital logic designer and circuit simulator_ [Digital](https://github.com/hneemann/Digital).
+It is created as part of a study work at the DHBW Mosbach.
 
 ## Features
 
