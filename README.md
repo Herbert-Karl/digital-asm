@@ -11,22 +11,19 @@ It is created as part of a study work at the DHBW Mosbach.
 
 ## Requirements
 
-Circuit simulator [Digital](https://github.com/hneemann/Digital) and [Assembler](https://github.com/hneemann/Assembler) for the digital processor. 
+Circuit simulator [Digital](https://github.com/hneemann/Digital) for the digital processor. 
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `asm.simulatorHost`: ip address of the host running the digital simulator 
+* `asm.simulatorPort`: port, at which the digital simulator runs its TcpListener
 
 ## Known Issues
 
-Chars not recognized.
+* Chars not recognized
+* octal numbers not specifically recognized
 
 ## Release Notes
 
