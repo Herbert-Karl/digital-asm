@@ -25,6 +25,18 @@
         "onLanguage:asm"
     ],
     "contributes": {
+        "configuration": {
+            "properties": {
+                "asm.simulatorHost": {
+                    "type": "string",
+                    "default": "127.0.0.1"
+                },
+                "asm.simulatorPort": {
+                    "type": "number",
+                    "default": 41114
+                }
+            }
+        },
         "languages": [
             {
                 "id": "asm",
