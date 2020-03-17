@@ -26,6 +26,7 @@
     ],
     "contributes": {
         "configuration": {
+            "type": "object",
             "title": "Digital-Asm",
             "properties": {
                 "asm.simulatorHost": {
@@ -38,6 +39,11 @@
                     "type": "number",
                     "description": "Port at which the TcpListener of the simulator runs",
                     "default": 41114
+                },
+                "asm.assembler": {
+                    "type": "string",
+                    "description": "Location of the jar file of the ASM3 programm",
+                    "default": "./asm3.jar"
                 }
             }
         },

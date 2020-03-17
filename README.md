@@ -11,7 +11,8 @@ It is created as part of a study work at the DHBW Mosbach.
 
 ## Requirements
 
-Circuit simulator [Digital](https://github.com/hneemann/Digital) for the digital processor. 
+* Circuit simulator [Digital](https://github.com/hneemann/Digital) for the digital processor. _(not yet used)_
+* Assembler [ASM 3](https://github.com/hneemann/Assembler) for parsing the file. _(not yet used)_
 
 ## Extension Settings
 
@@ -19,6 +20,7 @@ This extension contributes the following settings:
 
 * `asm.simulatorHost`: ip address of the host running the digital simulator 
 * `asm.simulatorPort`: port, at which the digital simulator runs its TcpListener
+* `asm.assembler`: location of the jar file of the ASM3 programm
 
 ## Known Issues
 
