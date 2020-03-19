@@ -20,6 +20,7 @@
     "keywords": [
         "assembler, digital"
     ],
+    "preview": true,
     "main": "./out/extension.js",
     "activationEvents": [
         "onLanguage:asm"

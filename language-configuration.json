@@ -9,12 +9,14 @@
     ],
     // symbols that are auto closed when typing
     "autoClosingPairs": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"],
-        ["\"", "\""],
-        ["'", "'"]
+        {"open": "{", "close": "}"},
+        {"open": "[", "close": "]"},
+        {"open": "(", "close": ")"},
+        {"open": "\"", "close": "\""},
+        {"open": "'", "close": "'"}
     ],
+    // closes pairs even when the given symbols follow right after the cursor
+    "autoCloseBefore": ";:.,=}])>` \n\t",
     // symbols that that can be used to surround a selection
     "surroundingPairs": [
         ["{", "}"],
