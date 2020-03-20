@@ -6,7 +6,12 @@ import * as vscode from 'vscode';
 // import * as myExtension from '../../extension';
 
 suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+	before(() => {
+		vscode.window.showInformationMessage('Start all tests.');
+	});
+	after(() => {
+		vscode.window.showInformationMessage('All tests done!');
+	  });
 
 	test('Sample test', () => {
 		assert.equal([1, 2, 3].indexOf(5), -1);
