@@ -68,7 +68,12 @@
                 "scopeName": "source.asm",
                 "path": "./syntaxes/asm.tmLanguage.json"
             }
-        ]
+        ],
+        "commands": [{
+            "command": "digital-asm.parse-asm",
+            "title": "Parsing of a .asm file into a corresponding .hex file",
+            "category": "Digital Assembler"
+        }]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
