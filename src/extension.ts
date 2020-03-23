@@ -24,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
             if(help===undefined) {
                 // if there is neither a given URI nor an active text editor, we can't parse and return while showing an error message
                 vscode.window.showErrorMessage("No given or active file.");
+                console.error("No given or active file.");
                 return "No given or active file.";
             }
             Uri = help.document.uri;
@@ -33,10 +34,19 @@ export function activate(context: vscode.ExtensionContext) {
         if(fileToParse.languageId!=='asm') {
             // if the file, which shall be parsed, doesn't match the asm languageId, we don't try to parse it and return while showing an error message
             vscode.window.showErrorMessage("Language of file isn't supported.");
+            console.error("Language of file isn't supported.");
             return "Language of file isn't supported.";
         }
 
-        java.classpath.push(path.join(__dirname + "/../" + asm3JarPath));
+        if(!fs.existsSync(asm3JarPath)) {
+            // if we don't find a file at the given path for the asm3.jar, we alert the user and abort parsing
+            // continuing would creating errors when trying to access the classes contained in the jar file
+            vscode.window.showErrorMessage("Path for asm3.jar doesn't point to a existing file.");
+            console.error("Path for asm3.jar doesn't point to a existing file.");
+            return "Path for asm3.jar doesn't point to a existing file.";
+        }
+
+        java.classpath.push(path.join(asm3JarPath));
 
         try {
             let Parser = java.import('de.neemann.assembler.parser.Parser');
