@@ -9,7 +9,11 @@ import * as path from 'path';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     // plugin settings
-    const asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
+    let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
+    // if the configuration of the workspace changes, we simply override our values referencing the plugin settings
+    vscode.workspace.onDidChangeConfiguration(() => {
+        asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
+    });
 
     // registering commands 
 
