@@ -37,7 +37,9 @@ suite('Extension Test Suite', () => {
 		const document = await vscode.workspace.openTextDocument(asmFile);
 		const editor = await vscode.window.showTextDocument(document);
 
-		await vscode.commands.executeCommand('digital-asm.parse-asm', asmFile);
+		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', asmFile);
+
+		assert.ifError(errorMessage);
 
 		// getting the content of the files
 		let parsedContent = fs.readFileSync(parsedFile.fsPath, 'utf-8');

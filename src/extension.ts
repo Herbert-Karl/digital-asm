@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
             if(help===undefined) {
                 // if there is neither a given URI nor an active text editor, we can't parse and return while showing an error message
                 vscode.window.showErrorMessage("No given or active file.");
-                return;
+                return "No given or active file.";
             }
             Uri = help.document.uri;
         }
@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
         if(fileToParse.languageId!=='asm') {
             // if the file, which shall be parsed, doesn't match the asm languageId, we don't try to parse it and return while showing an error message
             vscode.window.showErrorMessage("Language of file isn't supported.");
-            return;
+            return "Language of file isn't supported.";
         }
 
         java.classpath.push(path.join(__dirname + "/../" + 'asm3.jar')); // ToDo: get jar Path from plugin settings
@@ -45,10 +45,14 @@ export function activate(context: vscode.ExtensionContext) {
             //cleanup
             hexFile.close(); // closing stream to unlock the file for futher FileSystem operations
         } catch (ex) {
-            vscode.window.showErrorMessage(ex); // ToDo: better error handling and better error logging
-            return;
+            vscode.window.showErrorMessage(ex.message);
+            console.error(ex);
+            return ex.message;
         }
-        
+        return null;
+        // return behavior:
+        // if there is no error or problem while parsing, nothing is returned
+        // if there is an error, a error message is returned as string
     });
 
     // adding the implementation of the commands to the context of the extension, 

@@ -14,7 +14,7 @@ It is created as part of a study work at the DHBW Mosbach.
 ## Requirements
 
 * Circuit simulator [Digital](https://github.com/hneemann/Digital) for the digital processor. _(not yet used)_
-* Assembler [ASM 3](https://github.com/hneemann/Assembler) for parsing the file. _(not yet used)_
+* Assembler [ASM 3](https://github.com/hneemann/Assembler) for parsing the file.
 
 ## Extension Settings
 
@@ -28,6 +28,8 @@ This extension contributes the following settings:
 
 * Chars not recognized
 * octal numbers not specifically recognized
+
+If you find anything else, please open an issue on GitHub.
 
 ## Release Notes
 
