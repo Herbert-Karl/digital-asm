@@ -29,15 +29,23 @@ suite('Extension Test Suite', () => {
 		const hexFile = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'example_parsed.hex'));
 		const parsedFile = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'example.hex'));
 
+		if(fs.existsSync(parsedFile.fsPath)) {
+			// if an output file is present before we parse one in this test, we remove it
+			fs.unlinkSync(parsedFile.fsPath);
+		}
+
 		const document = await vscode.workspace.openTextDocument(asmFile);
 		const editor = await vscode.window.showTextDocument(document);
 
 		await vscode.commands.executeCommand('digital-asm.parse-asm', asmFile);
 
 		// getting the content of the files
-		let parsedContent = fs.readFileSync(parsedFile.fsPath, 'utf-8');	// ToDo: vorher eine mögliche existierende Datei entfernen
+		let parsedContent = fs.readFileSync(parsedFile.fsPath, 'utf-8');
 		const expectedContent = fs.readFileSync(hexFile.fsPath, 'utf-8');
 
 		assert.deepEqual(parsedContent, expectedContent);
+
+		// cleanup
+		fs.unlinkSync(parsedFile.fsPath); // removes the output file from this test; subsequent test should start without a parsed .hex file
 	});
 });

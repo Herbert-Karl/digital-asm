@@ -41,6 +41,9 @@ export function activate(context: vscode.ExtensionContext) {
             let hexFile = new PrintStream(hexPath);
             let hexFormatter = new HexFormatter(hexFile);
             program.traverseSync(hexFormatter); // 'Sync' Suffix comes from the java module because reasons ...
+
+            //cleanup
+            hexFile.close(); // closing stream to unlock the file for futher FileSystem operations
         } catch (ex) {
             vscode.window.showErrorMessage(ex); // ToDo: better error handling and better error logging
             return;
