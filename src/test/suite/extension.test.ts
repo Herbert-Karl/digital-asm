@@ -35,7 +35,7 @@ suite('Extension Test Suite', () => {
 		await vscode.commands.executeCommand('digital-asm.parse-asm', asmFile);
 
 		// getting the content of the files
-		let parsedContent = fs.readFileSync(parsedFile.fsPath, 'utf-8');
+		let parsedContent = fs.readFileSync(parsedFile.fsPath, 'utf-8');	// ToDo: vorher eine mögliche existierende Datei entfernen
 		const expectedContent = fs.readFileSync(hexFile.fsPath, 'utf-8');
 
 		assert.deepEqual(parsedContent, expectedContent);
