@@ -1,4 +1,9 @@
 .vscode/**
 .vscode-test/**
 .gitignore
-vsc-extension-quickstart.md
+tsconfig.json
+tslint.json
+#
+src/**
+out/test/**
+asm3.jar
