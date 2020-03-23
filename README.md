@@ -33,4 +33,4 @@ If you find anything else, please open an issue on GitHub.
 
 ## Release Notes
 
-please check the [CHANGELOG.md](Changelog.md) file for release notes.
+please check the [CHANGELOG.md](CHANGELOG.md) file for release notes.

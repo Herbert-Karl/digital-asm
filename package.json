@@ -80,7 +80,8 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./"
+        "watch": "tsc -watch -p ./",
+        "rebuild-modules": "npm run electron-rebuild -v 7 && node node_modules\\java\\postInstall.js"
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
