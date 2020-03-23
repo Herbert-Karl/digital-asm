@@ -2,7 +2,7 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
-## 0.2.0 - tbd
+## 0.2.0 - 23.02.2020
 
 * added extension entry point 
 * added properties for accessing the digital simulator and asm3 programm
