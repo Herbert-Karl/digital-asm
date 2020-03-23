@@ -8,6 +8,10 @@ import * as path from 'path';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    // plugin settings
+    const asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
+
+    // registering commands 
 
     let parseAsm = vscode.commands.registerCommand('digital-asm.parse-asm', async (Uri: vscode.Uri) => {
         if(Uri===undefined) {
@@ -28,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
             return "Language of file isn't supported.";
         }
 
-        java.classpath.push(path.join(__dirname + "/../" + 'asm3.jar')); // ToDo: get jar Path from plugin settings
+        java.classpath.push(path.join(__dirname + "/../" + asm3JarPath));
 
         try {
             let Parser = java.import('de.neemann.assembler.parser.Parser');
