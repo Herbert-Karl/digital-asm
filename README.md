@@ -8,6 +8,8 @@ It is created as part of a study work at the DHBW Mosbach.
 ## Features
 
 * Language Grammar Definition for the Assembler
+* Commands
+  * Parsing `.asm` into `.hex`
 
 ## Requirements
 
@@ -29,4 +31,4 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-please check CHANGELOG.md file for release notes.
+please check the [CHANGELOG.md](Changelog.md) file for release notes.
