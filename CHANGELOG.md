@@ -2,6 +2,10 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
+## 0.2.1 - 24.03.2020
+
+* fixed command for parsing
+
 ## 0.2.0 - 23.02.2020
 
 * added extension entry point 
