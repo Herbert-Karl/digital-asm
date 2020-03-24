@@ -92,10 +92,14 @@
                 "label": "Asm Debug",
                 "program": "./out/asmDebug.js",
                 "runtime": "node",
-                "languages": ["asm"],
+                "languages": [
+                    "asm"
+                ],
                 "configurationAttributes": {
                     "run": {
-                        "required": ["file"],
+                        "required": [
+                            "file"
+                        ],
                         "properties": {
                             "file": {
                                 "type": "string",
@@ -104,7 +108,9 @@
                         }
                     },
                     "debug": {
-                        "required": ["file"],
+                        "required": [
+                            "file"
+                        ],
                         "properties": {
                             "file": {
                                 "type": "string",
@@ -164,5 +170,8 @@
         "tslint": "^5.20.0",
         "typescript": "^3.8.3",
         "vscode-test": "^1.3.0"
+    },
+    "dependencies": {
+        "vscode-debugadapter": "^1.39.0"
     }
 }
