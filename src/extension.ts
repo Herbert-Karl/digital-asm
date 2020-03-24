@@ -17,12 +17,12 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // registering commands 
-
     let parseAsm = vscode.commands.registerCommand('digital-asm.parse-asm', commandFrame(commandParseAsm));
+    let runAsm = vscode.commands.registerCommand('digital-asm.execute-asm', commandFrame(commandRunAsm));
 
     // adding the implementation of the commands to the context of the extension, 
     //so that the implementations will be executed, when the commands are called
-    context.subscriptions.push(parseAsm);
+    context.subscriptions.push(parseAsm, runAsm);
 }
 
 // this method is called when your extension is deactivated
@@ -45,7 +45,7 @@ function commandParseAsm(td: vscode.TextDocument): string | null {
         let asmParser = new Parser(td.getText());
         // creating the internal representation of the content of the asm file 
         let program = asmParser.parseProgramSync(); // 'Sync' Suffix comes from the java module because reasons ...
-        program.optimizeAndLinkSync();
+        program.optimizeAndLinkSync(); // 'Sync' Suffix comes from the java module because reasons ...
         // because the writeHex Funtion in asm3 isnt public, we re-implement its functionality
         let HexFormatter = java.import('de.neemann.assembler.asm.formatter.HexFormatter');
         let hexPath = td.uri.path.replace(".asm", ".hex");
@@ -56,6 +56,41 @@ function commandParseAsm(td: vscode.TextDocument): string | null {
 
         //cleanup
         hexFile.close(); // closing stream to unlock the file for futher FileSystem operations
+    } catch (ex) {
+        vscode.window.showErrorMessage(ex.message);
+        console.error(ex);
+        return ex.message;
+    }
+    return null;
+}
+
+// function implementing the execution of a .asm file
+// for this, the function uses an interface to java to create a RemoteInterface Object to access the digital simulator
+// the .asm file is parsed before running it
+// params:
+// the function takes the file, that shall be run, as a TextDocument
+// return:
+// if there is an error, an error message is returned as string
+// if the function ended successful, `null` will be returned
+// futhermore the content of the file will start to run in the digitial simulator
+// expects:
+// asm3.jar already added to java classpath
+// TextDocument is a .asm file
+// digital simulator program is run on the local machine
+function commandRunAsm(td: vscode.TextDocument): string | null {
+    try {
+        let RemoteInterface = java.import('de.neemann.assembler.gui.RemoteInterface'); 
+        let simulatorInterface = new RemoteInterface();
+        // parsing the file before running it, so that the latest saved state is used
+        let error = commandParseAsm(td);
+        if (error !== null) {
+            return error;
+        }
+        let hexPath = td.uri.path.replace(".asm", ".hex");
+        let File = java.import('java.io.File');
+        let hexFile = new File(hexPath);
+        // loading and starting the digital simulator via the RemoteInterface with the .hex file created earlier
+        simulatorInterface.startSync(hexFile); // 'Sync' Suffix comes from the java module because reasons ...
     } catch (ex) {
         vscode.window.showErrorMessage(ex.message);
         console.error(ex);

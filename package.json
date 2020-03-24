@@ -74,6 +74,11 @@
                 "command": "digital-asm.parse-asm",
                 "title": "Parsing of a .asm file into a corresponding .hex file",
                 "category": "Digital Assembler"
+            },
+            {
+                "command": "digital-asm.execute-asm",
+                "title": "Running of a .asm file in the digital simulator",
+                "category": "Digital Assembler"
             }
         ]
     },
