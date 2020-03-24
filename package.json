@@ -80,6 +80,73 @@
                 "title": "Running of a .asm file in the digital simulator",
                 "category": "Digital Assembler"
             }
+        ],
+        "breakpoints": [
+            {
+                "language": "asm"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "digital-conn",
+                "label": "Asm Debug",
+                "program": "./out/asmDebug.js",
+                "runtime": "node",
+                "languages": ["asm"],
+                "configurationAttributes": {
+                    "run": {
+                        "required": ["file"],
+                        "properties": {
+                            "file": {
+                                "type": "string",
+                                "description": "the file to run"
+                            }
+                        }
+                    },
+                    "debug": {
+                        "required": ["file"],
+                        "properties": {
+                            "file": {
+                                "type": "string",
+                                "description": "the file to debug"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "asm",
+                        "request": "run",
+                        "name": "Ask for file name",
+                        "file": "${workspaceFolder}/${command:AskForFileName}"
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Asm Debug: Run",
+                        "description": "configuration for running an asm file",
+                        "body": {
+                            "type": "asm",
+                            "request": "run",
+                            "name": "Ask for file name",
+                            "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
+                        }
+                    },
+                    {
+                        "label": "Asm Debug: Debug",
+                        "description": "configuration for debugging an asm file",
+                        "body": {
+                            "type": "asm",
+                            "request": "debug",
+                            "name": "Ask for file name",
+                            "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
+                        }
+                    }
+                ],
+                "variables": {
+                    "AskForFileName": "digital-asm.getFileName"
+                }
+            }
         ]
     },
     "scripts": {

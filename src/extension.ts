@@ -14,7 +14,7 @@ let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulat
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {  
+export function activate(context: vscode.ExtensionContext) {
     // if the configuration of the workspace changes, we simply override our values referencing the plugin settings
     vscode.workspace.onDidChangeConfiguration(() => {
         asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
@@ -22,9 +22,15 @@ export function activate(context: vscode.ExtensionContext) {
         simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
     });
 
-    // registering commands 
+    // registering commands
     let parseAsm = vscode.commands.registerCommand('digital-asm.parse-asm', commandFrame(commandParseAsm));
     let runAsm = vscode.commands.registerCommand('digital-asm.execute-asm', commandFrame(commandRunAsm));
+    //
+    let getFileName = vscode.commands.registerCommand('digital-asm.getFileName', () => {
+        return vscode.window.showInputBox({
+            placeHolder: "Please enter the name of the file in the workspace folder."
+        });
+    });
 
     // registering our provider for completions
     let completionProvider = vscode.languages.registerCompletionItemProvider('asm', new AsmCompletionItemProvider());
@@ -32,9 +38,9 @@ export function activate(context: vscode.ExtensionContext) {
     // registering our provider for hovers
     let hoverProvider = vscode.languages.registerHoverProvider('asm', new AsmHoverProvider());
 
-    // adding the implementation of the commands to the context of the extension, 
+    // adding the implementation of the commands to the context of the extension,
     //so that the implementations will be executed, when the commands are called
-    context.subscriptions.push(parseAsm, runAsm);
+    context.subscriptions.push(parseAsm, runAsm, getFileName);
 
     // adding our providers to the context of the extension
     context.subscriptions.push(completionProvider, hoverProvider);
@@ -45,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 // function implementing the parsing of a .asm file into a .hex file
-// for this, the function uses spawns a child process which executes the jar file with the given asm file 
+// for this, the function uses spawns a child process which executes the jar file with the given asm file
 // we wait for the process to finish in order to ensure that following steps have the .hex and .lst files written to the file system
 // params:
 // the function takes the file, that shall be parsed, as a TextDocument
@@ -100,7 +106,7 @@ function commandRunAsm(td: vscode.TextDocument): string | null {
     return null;
 }
 
-// function implementing checks before executing a given command 
+// function implementing checks before executing a given command
 // params:
 // function implementing the command, which shall be executed with the given file
 // return:
