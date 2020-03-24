@@ -36,11 +36,16 @@ export function deactivate() {}
 // return:
 // if there is an error, an error message is returned as string
 // if the function ended successful, `null` will be returned
+// expects:
+// asm3.jar already added to java classpath
+// TextDocument is a .asm file
 function commandParseAsm(td: vscode.TextDocument): string | null {
     try {
         let Parser = java.import('de.neemann.assembler.parser.Parser');
         let asmParser = new Parser(td.getText());
+        // creating the internal representation of the content of the asm file 
         let program = asmParser.parseProgramSync(); // 'Sync' Suffix comes from the java module because reasons ...
+        program.optimizeAndLinkSync();
         // because the writeHex Funtion in asm3 isnt public, we re-implement its functionality
         let HexFormatter = java.import('de.neemann.assembler.asm.formatter.HexFormatter');
         let hexPath = td.uri.path.replace(".asm", ".hex");
