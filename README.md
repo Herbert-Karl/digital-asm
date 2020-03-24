@@ -13,8 +13,10 @@ It is created as part of a study work at the DHBW Mosbach.
 
 ## Requirements
 
-* Circuit simulator [Digital](https://github.com/hneemann/Digital) for the digital processor. _(not yet used)_
+* Circuit simulator [Digital](https://github.com/hneemann/Digital) for the digital processor.
 * Assembler [ASM 3](https://github.com/hneemann/Assembler) for parsing the file.
+
+These are not included in the extension and have to be downloaded seperately.
 
 ## Extension Settings
 

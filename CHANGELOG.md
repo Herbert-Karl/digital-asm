@@ -2,6 +2,10 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
+## 0.3.0 - tbd
+
+* added command for running the .asm file in the digital simulator 
+
 ## 0.2.1 - 24.03.2020
 
 * fixed command for parsing
