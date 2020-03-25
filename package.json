@@ -90,24 +90,13 @@
             {
                 "type": "digital-conn",
                 "label": "Asm Debug",
-                "program": "./out/asmDebug.js",
+                "program": "./out/debugAdapter.js",
                 "runtime": "node",
                 "languages": [
                     "asm"
                 ],
                 "configurationAttributes": {
-                    "run": {
-                        "required": [
-                            "file"
-                        ],
-                        "properties": {
-                            "file": {
-                                "type": "string",
-                                "description": "the file to run"
-                            }
-                        }
-                    },
-                    "debug": {
+                    "launch": {
                         "required": [
                             "file"
                         ],
@@ -122,28 +111,18 @@
                 "initialConfigurations": [
                     {
                         "type": "asm",
-                        "request": "run",
+                        "request": "launch",
                         "name": "Ask for file name",
                         "file": "${workspaceFolder}/${command:AskForFileName}"
                     }
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "Asm Debug: Run",
+                        "label": "Asm Debug",
                         "description": "configuration for running an asm file",
                         "body": {
                             "type": "asm",
-                            "request": "run",
-                            "name": "Ask for file name",
-                            "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
-                        }
-                    },
-                    {
-                        "label": "Asm Debug: Debug",
-                        "description": "configuration for debugging an asm file",
-                        "body": {
-                            "type": "asm",
-                            "request": "debug",
+                            "request": "launch",
                             "name": "Ask for file name",
                             "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
                         }
