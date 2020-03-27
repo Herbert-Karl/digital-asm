@@ -63,6 +63,7 @@ export class RemoteInterface {
             let length = RemoteInterface.getUTF8ByteLength(command);
             // we add the length of the command infront of the command before writing,
             // because the simulator on the other end needs/excepts this information 
+            // (specialty of the DataOutputStream/DataInputStream used in the java program)
             socket.write(length+command);
 
             // when the socket gets the data, we end the socket connection and return the data from the connection
