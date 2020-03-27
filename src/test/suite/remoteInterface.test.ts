@@ -25,12 +25,12 @@ suite('RemoteInterface Test Suite', () => {
 		server.listen(27322, "localhost");
 		// we simple answer with the same string for every connection
 		server.on('connection', function(socket) {
-			socket.write("ok:001f");
+			socket.write("  ok:001f");
 		});
 
 		let remoteInterface = new RemoteInterface("localhost", 27322);
-		assert.equal(await remoteInterface.step(), "ok:001f");
-		assert.equal(await remoteInterface.run(), "ok:001f");
+		assert.equal(await remoteInterface.step(), "  ok:001f");
+		assert.equal(await remoteInterface.run(), "  ok:001f");
 
 		// cleanup
 		server.close();
