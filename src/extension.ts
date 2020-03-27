@@ -5,9 +5,12 @@ var java = require("java"); // used to interface with jar files
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { RemoteInterface } from './remoteInterface';
 
 // plugin settings
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
+let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "127.0.0.1");
+let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -15,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
     // if the configuration of the workspace changes, we simply override our values referencing the plugin settings
     vscode.workspace.onDidChangeConfiguration(() => {
         asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
+        simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "127.0.0.1");
+        simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
     });
 
     // registering commands 
@@ -52,7 +57,7 @@ function commandParseAsm(td: vscode.TextDocument): string | null {
 }
 
 // function implementing the execution of a .asm file
-// for this, the function uses an interface to java to create a RemoteInterface Object to access the digital simulator
+// for this, the function uses a remoteInterface to access the digital simulator
 // the .asm file is parsed before running it
 // params:
 // the function takes the file, that shall be run, as a TextDocument
@@ -61,23 +66,22 @@ function commandParseAsm(td: vscode.TextDocument): string | null {
 // if the function ended successful, `null` will be returned
 // futhermore the content of the file will start to run in the digitial simulator
 // expects:
-// asm3.jar already added to java classpath
 // TextDocument is a .asm file
 // digital simulator program is run on the local machine
 function commandRunAsm(td: vscode.TextDocument): string | null {
     try {
-        let RemoteInterface = java.import('de.neemann.assembler.gui.RemoteInterface'); 
-        let simulatorInterface = new RemoteInterface();
-        // parsing the file before running it, so that the latest saved state is used
         let error = commandParseAsm(td);
         if (error !== null) {
             return error;
         }
-        let hexPath = td.uri.path.replace(".asm", ".hex");
-        let File = java.import('java.io.File');
-        let hexFile = new File(hexPath);
-        // loading and starting the digital simulator via the RemoteInterface with the .hex file created earlier
-        simulatorInterface.startSync(hexFile); // 'Sync' Suffix comes from the java module because reasons ...
+        let hexPath = td.uri.fsPath.replace(".asm", ".hex");
+
+        let remoteInterface = new RemoteInterface(simulatorHost, simulatorPort);
+        remoteInterface.start(hexPath)
+            .catch( (err) => {
+                vscode.window.showErrorMessage(err.message);
+                console.error(err);
+            });
     } catch (ex) {
         vscode.window.showErrorMessage(ex.message);
         console.error(ex);
@@ -125,6 +129,6 @@ function commandFrame(Command: (td: vscode.TextDocument) => string | null): (Uri
         java.classpath.push(path.join(asm3JarPath));
 
         // execution of the given command
-        return Command(fileToParse);
+        return await Command(fileToParse);
     };
 }
