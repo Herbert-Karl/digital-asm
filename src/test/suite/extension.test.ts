@@ -18,11 +18,6 @@ suite('Extension Test Suite', () => {
 		vscode.window.showInformationMessage('All tests done!');
 	  });
 
-	test('Sample test', () => {
-		assert.equal([1, 2, 3].indexOf(5), -1);
-		assert.equal([1, 2, 3].indexOf(0), -1);
-	});
-
 	test('Parsing simple asm file', async () => {
 		// defining URIs for the files used in this test
 		const asmFile = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'example.asm'));
