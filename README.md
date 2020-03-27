@@ -9,7 +9,8 @@ It is created as part of a study work at the DHBW Mosbach.
 
 * Language Grammar Definition for the Assembler
 * Commands
-  * Parsing `.asm` into `.hex`
+  * Parsing `.asm` into `.hex` and `.lst`
+  * Running file in the digital simulator
 
 ## Requirements
 
