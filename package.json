@@ -45,6 +45,11 @@
                     "type": "string",
                     "description": "Location of the jar file of the ASM3 programm",
                     "default": "./asm3.jar"
+                },
+                "asm.brkHandling": {
+                    "type": "boolean",
+                    "description": "Option to handle BRK Mnemonics as BreakPoints when debugging",
+                    "default": "true"
                 }
             }
         },
