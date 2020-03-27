@@ -28,6 +28,7 @@ This extension contributes the following settings:
 * `asm.simulatorHost`: ip address of the host running the digital simulator 
 * `asm.simulatorPort`: port, at which the digital simulator runs its TcpListener
 * `asm.assembler`: location of the jar file of the ASM3 programm
+* `asm.brkHandling`: option to handle BRK Mnemonics as BreakPoints when debugging
 
 ## Known Issues
 
