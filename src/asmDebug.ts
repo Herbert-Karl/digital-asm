@@ -4,6 +4,7 @@ var java = require("java"); // used to interface with jar files
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { EventEmitter } from 'events';
 
 // the implementation of debugging for the asm files uses the DebugSession based on the Debug Adapter Protocol
 // thereby, the generic debug ui of VS Code will be usable for debugging
@@ -13,6 +14,8 @@ export class AsmDebugSession extends DebugSession {
     // because we do not support multiple threads, we hardcode an id to use as a default
     private static THREAD_ID: 1;
 
+    private debugger: AsmDebugger;
+
     public constructor() {
         super();
 
@@ -20,6 +23,8 @@ export class AsmDebugSession extends DebugSession {
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
 
+        //
+        this.debugger = new AsmDebugger();
     }
 
     // override of the default implementation of the function
@@ -109,11 +114,27 @@ export class AsmDebugSession extends DebugSession {
     protected sourceRequest(response: DebugProtocol.SourceResponse, args: DebugProtocol.SourceArguments, request?: DebugProtocol.Request) : void {
         // ToDo: implement!!!
         this.sendResponse(response);
+    }
+    
+    // override of the default implementation of the function
+    // request for the stackFrames of the referenced thread
+    // importantly, the stackFrame contains the information, which line the program is currently at
+    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request): void {
+        // ToDo: Implement!!!
+        this.sendResponse(response);
 	}
 
     /*
-        requests for Evaluate, StackTraces, Scopes and Variables aren't implemented (empty base implementation used)
+        requests for Evaluate, Scopes and Variables aren't implemented (empty base implementation used)
         because we do not support these things
         but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
+}
+
+export class AsmDebugger extends EventEmitter {
+
+    public constructor() {
+        super();
+    }
+
 }
