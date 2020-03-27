@@ -1,6 +1,5 @@
 import { spawnSync } from 'child_process';
 import * as fs from 'fs';
-var java = require("java"); // used to interface with jar files
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
@@ -126,9 +125,7 @@ function commandFrame(Command: (td: vscode.TextDocument) => string | null): (Uri
             return "Path for asm3.jar doesn't point to a existing file.";
         }
 
-        java.classpath.push(path.join(asm3JarPath));
-
         // execution of the given command
-        return await Command(fileToParse);
+        return Command(fileToParse);
     };
 }
