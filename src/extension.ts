@@ -1,3 +1,4 @@
+import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 var java = require("java"); // used to interface with jar files
 // The module 'vscode' contains the VS Code extensibility API
@@ -29,33 +30,19 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 // function implementing the parsing of a .asm file into a .hex file
-// for this, the function uses an interface to java to create a Parser Object from asm3 for parsing the .asm file
-// and a HexFormatter Object for writing the parsed Program to file
+// for this, the function uses spawns a child process which executes the jar file with the given asm file 
+// we wait for the process to finish in order to ensure that following steps have the .hex and .lst files written to the file system
 // params:
 // the function takes the file, that shall be parsed, as a TextDocument
 // return:
 // if there is an error, an error message is returned as string
 // if the function ended successful, `null` will be returned
 // expects:
-// asm3.jar already added to java classpath
 // TextDocument is a .asm file
 function commandParseAsm(td: vscode.TextDocument): string | null {
     try {
-        let Parser = java.import('de.neemann.assembler.parser.Parser');
-        let asmParser = new Parser(td.getText());
-        // creating the internal representation of the content of the asm file 
-        let program = asmParser.parseProgramSync(); // 'Sync' Suffix comes from the java module because reasons ...
-        program.optimizeAndLinkSync(); // 'Sync' Suffix comes from the java module because reasons ...
-        // because the writeHex Funtion in asm3 isnt public, we re-implement its functionality
-        let HexFormatter = java.import('de.neemann.assembler.asm.formatter.HexFormatter');
-        let hexPath = td.uri.path.replace(".asm", ".hex");
-        let PrintStream = java.import('java.io.PrintStream');
-        let hexFile = new PrintStream(hexPath);
-        let hexFormatter = new HexFormatter(hexFile);
-        program.traverseSync(hexFormatter); // 'Sync' Suffix comes from the java module because reasons ...
-
-        //cleanup
-        hexFile.close(); // closing stream to unlock the file for futher FileSystem operations
+        let pathToHex = td.uri.path;
+        let child = spawnSync('java', ["-jar", asm3JarPath, pathToHex]);
     } catch (ex) {
         vscode.window.showErrorMessage(ex.message);
         console.error(ex);
