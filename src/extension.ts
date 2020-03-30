@@ -62,8 +62,8 @@ export function deactivate() {}
 // TextDocument is a .asm file
 function commandParseAsm(td: vscode.TextDocument): string | null {
     try {
-        let pathToHex = td.uri.path;
-        let child = spawnSync('java', ["-jar", asm3JarPath, pathToHex]);
+        let pathToAsm = td.uri.path;
+        let child = spawnSync('java', ["-jar", asm3JarPath, pathToAsm]);
     } catch (ex) {
         vscode.window.showErrorMessage(ex.message);
         console.error(ex);
