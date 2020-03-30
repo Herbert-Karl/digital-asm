@@ -15,31 +15,46 @@ export class RemoteInterface {
 
     // loading the program and starting it
     // params:
-    // path to the hexFile, which shall be run in the simulator 
-    public async start(pathToHex: string): Promise<string> {
+    // path to the hexFile, which shall be run in the simulator
+    // returns:
+    // passes through a promise waiting for a response from executing the command in the digital simulator
+    // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
+    public async start(pathToHex: string): Promise<number> {
         return this.sendRequest("start", pathToHex);
     }
 
     // loading the program but does not begin running it
     // params:
     // path to the hexFile, which shall be run in the simulator
-    public async debug(pathToHex: string): Promise<string> {
+    // returns:
+    // passes through a promise waiting for a response from executing the command in the digital simulator
+    // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
+    public async debug(pathToHex: string): Promise<number> {
         return this.sendRequest("debug", pathToHex);
     }
 
     // runs the program
     // executing is stopped, when a BRK statement comes up
-    public async run(): Promise<string> {
+    // returns:
+    // passes through a promise waiting for a response from executing the command in the digital simulator
+    // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
+    public async run(): Promise<number> {
         return this.sendRequest("run", "");
     }
 
     // stops execution of the program
-    public async stop(): Promise<string> {
+    // returns:
+    // passes through a promise waiting for a response from executing the command in the digital simulator
+    // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
+    public async stop(): Promise<number> {
         return this.sendRequest("stop", "");
     }
 
     // runs a single clock step in the simulator
-    public async step(): Promise<string> {
+    // returns:
+    // passes through a promise waiting for a response from executing the command in the digital simulator
+    // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
+    public async step(): Promise<number> {
         return this.sendRequest("step", "");
     }
 
@@ -48,15 +63,15 @@ export class RemoteInterface {
     // the command for the simulator
     // and potentially needed arguments
     // returns:
-    // a Promise which either resolves to a string returned by the simulator that contains the current address in the program hex code
+    // a Promise which either resolves to a number that is the current address in the program hex code
     // or rejects into an error. the error might come from the simulator itself or from the tcp connection
-    private async sendRequest(command: string, args: string): Promise<string> {
+    private async sendRequest(command: string, args: string): Promise<number> {
         let socket = new net.Socket();
         socket.setDefaultEncoding("utf8");
         socket.setNoDelay(true);
         socket.connect(this.Port, this.IP);
 
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<number>((resolve, reject) => {
             if(args!=="") {
                 command = command+":"+args;
             }
@@ -74,7 +89,8 @@ export class RemoteInterface {
                 if(!(response.substr(2,2)==="ok" || response.substr(2,3)==="ok:")) {
                     reject(new Error("Error received from simulator: " + response));
                 }
-                resolve(response);
+                // convert the response from the digital simulator from string into the contained number and finish (resolve) the Promise
+                resolve(RemoteInterface.getAddress(response));
             });
 
             socket.on('error', function(err) {
@@ -93,6 +109,24 @@ export class RemoteInterface {
         let low = len & 255;
         // and create a utf-8 string representation of these two bytes 
         return String.fromCodePoint(high, low);
+    }
+
+    // function for converting the response string from digital, which contains the current address, into a usable number
+    // params:
+    // a string, being a positive response from digital
+    // returns:
+    // the address contained in the response as base 10 number or -1 if no number was present
+    private static getAddress(response: string): number {
+        if(response.length===4) {
+            // this was only a conformation response without an address
+            // as such, we have no number to compute and return -1
+            return -1;
+        }
+        else {
+            // we slice the first 5 bytes away, as they are not part of the number
+            // then we parse the string representing a base 16 number 
+            return parseInt(response.substr(5), 16);
+        }
     }
 
 }
