@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { DebugSession } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 // The module 'vscode' contains the VS Code extensibility API
@@ -274,7 +275,17 @@ export class AsmDebugger extends EventEmitter {
 
     // internal function for checking the source code for BRK statements and setting breakpoints for them
     private setBreakpointsAtBRK() {
-        // ToDo: implement!!!
+        // load all lines of the source file
+        let sourceCodeLines = fs.readFileSync(this.asmFile.fsPath, 'utf8').split('\n');
+        // check every line for 'BRK' and if there is a ';' before it
+        sourceCodeLines.forEach((line, index) => {
+            let brk = line.indexOf("BRK");
+            let semicolon = line.indexOf(";");
+            if(brk!==-1 && brk<semicolon) {
+                // create a breakpoint for this line
+                this.setBreakpoint(index);
+            }
+        });    
     }
 
     // function for removing a single breakpoint
@@ -296,11 +307,23 @@ export class AsmDebugger extends EventEmitter {
         this.breakpoints = new Array<AsmBreakpoint>();
     }
 
+    // function for creating a stacktrace / array of stackframes
+    // the returned "frames" closely resemble the frames used by the Debug Adapter Protocol
+    // currently we support only a single stackFrame; as such, the parameter for start- and endFrame do nothing
+    public stack(startFrame: number, endFrame: number): any {
+        let frames = new Array<any>();
 
-    //
-    // currently we support only a single stackFrame; as such, no parameter for start- and endFrame exist
-    public stack() {
-        // ToDo: implement
+        let newFrame = {
+            id: 1,
+            name: this.getFileName(),
+            source: this.asmFile.fsPath,
+            line: this.currentCodeLine,
+            column: this.getColumn(this.currentCodeLine),
+        };
+
+        frames.push(newFrame);
+
+        return frames;
     }
 
     // for emitting events
@@ -310,6 +333,20 @@ export class AsmDebugger extends EventEmitter {
         setImmediate(_ => {
             this.emit(event, ...args);
         });
+    }
+
+    // helper function
+    // returns the index of the first non-whitespace char in the codeLine referenced by the given line number
+    // params:
+    // number of the codeLine
+    private getColumn(line: number): number {
+        let codeLine = fs.readFileSync(this.asmFile.fsPath, 'utf8').split('\n')[line]; // reads in the file as a single string, splits it into an array and then only takes the referenced line 
+        return codeLine.indexOf(codeLine.trimLeft());
+    }
+
+    private getFileName(): string {
+        let pathFragments = this.asmFile.path.split('/');
+        return pathFragments[pathFragments.length-1];
     }
 
 }
