@@ -130,10 +130,81 @@ export class AsmDebugSession extends DebugSession {
     */
 }
 
+export interface AsmBreakpoint {
+    codeline: number;
+    id: number;
+}
+
 export class AsmDebugger extends EventEmitter {
 
-    public constructor() {
+    private asmFile: vscode.Uri;
+    private hexFile: vscode.Uri;
+
+    // defines if the BRK Mnemonic shall be used as Breakpoint for debugging
+    private brkBreakpoints: boolean = true;
+
+    // mapping of the addresses used/returned by the digital simulator to the corresponding code lines in the asm file
+    private mapAddrToCodeLine: Map<number, number>;
+
+    // array for handling our breakpoints
+    private breakpoints: AsmBreakpoint[];
+    private breakpointId = 1;   // for numbering the breakpoints
+
+    // contructor for creating debugger and defining the important internal variables
+    // params:
+    // Uris to the asmFile and hexFile
+    // a boolean controling, if BRK Statements are to be made into breakpoints for debugging
+    // expects:
+    // the hexFile is the parsed version of the asmFile
+    public constructor(asm: vscode.Uri, hex: vscode.Uri, setBreakpointsAtBRK: boolean) {
         super();
+
+        this.mapAddrToCodeLine= new Map<number, number>();
+        this.breakpoints = new Array<AsmBreakpoint>();
+
+        this.asmFile = asm;
+        this.hexFile = hex;
+        this.brkBreakpoints = setBreakpointsAtBRK;
+    }
+
+    // start up the program
+    // depending on the given boolean, the program either starts running or waits at the first code line 
+    public start(stopOnEntry: boolean) {
+        // ToDo: implement!!!
+    }
+
+    // setting a breakpoint in the given line
+    public setBreakpoint(codeline: number): AsmBreakpoint {
+        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++};
+        this.breakpoints.push(newBreakpoint);
+        return newBreakpoint;
+    }
+
+    // internal function for checking the source code for BRK statements and setting breakpoints for them
+    private setBreakpointsAtBRK() {
+        // ToDo: implement!!!
+    }
+
+    // function for removing a single breakpoint
+    // params:
+    // codeline at which the breakpoint is set
+    public clearBreakpoint(codeline: number): AsmBreakpoint | undefined {
+        // null check for our array of breakpoints
+        if(this.breakpoints) {
+            let index = this.breakpoints.findIndex(bp => bp.codeline === codeline);
+            // if no breakpoint for this line is found (index -1) we can't get and return a breakpoint
+            if(index >= 0) {
+                let breakpoint = this.breakpoints[index];
+                this.breakpoints.splice(index, 1); //removes one element in the array beginning at the position given by index, effectivly deleting the breakpoint from the array
+                return breakpoint;
+            }
+        }
+        return undefined; // covers two cases: missing array and missing breakpoint corresponsing to given codeline
+    }
+
+    // function for removing all breakpoints at once
+    public clearAllBreakpoints() {
+        this.breakpoints = new Array<AsmBreakpoint>();
     }
 
 }
