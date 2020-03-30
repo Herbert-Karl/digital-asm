@@ -4,6 +4,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { EventEmitter } from 'events';
+import { RemoteInterface } from './remoteInterface';
 
 // the implementation of debugging for the asm files uses the DebugSession based on the Debug Adapter Protocol
 // thereby, the generic debug ui of VS Code will be usable for debugging
@@ -150,13 +151,20 @@ export class AsmDebugger extends EventEmitter {
     private breakpoints: AsmBreakpoint[];
     private breakpointId = 1;   // for numbering the breakpoints
 
+    // values for tracking state
+    private currentCodeLine = 0;
+    private numberNonBRKBreakpoints = 0;
+
+    // for communicating with the digital simulator
+    private remoteInterface: RemoteInterface;
+
     // contructor for creating debugger and defining the important internal variables
     // params:
     // Uris to the asmFile and hexFile
     // a boolean controling, if BRK Statements are to be made into breakpoints for debugging
     // expects:
     // the hexFile is the parsed version of the asmFile
-    public constructor(asm: vscode.Uri, hex: vscode.Uri, setBreakpointsAtBRK: boolean) {
+    public constructor(asm: vscode.Uri, hex: vscode.Uri, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
         super();
 
         this.mapAddrToCodeLine= new Map<number, number>();
@@ -165,13 +173,97 @@ export class AsmDebugger extends EventEmitter {
         this.asmFile = asm;
         this.hexFile = hex;
         this.brkBreakpoints = setBreakpointsAtBRK;
+
+        this.remoteInterface = new RemoteInterface(IPofSimulator, PortOfSimulator);
     }
 
     // start up the program
     // depending on the given boolean, the program either starts running or waits at the first code line 
     public start(stopOnEntry: boolean) {
-        // ToDo: implement!!!
+        // before starting, we check if BRK statements should be breakpoints and set them
+        if(this.brkBreakpoints) {
+            this.setBreakpointsAtBRK();
+        }
+        let pathToHexFile = this.hexFile.fsPath;
+        this.remoteInterface.debug(pathToHexFile)
+            .then((addr)=> {
+                if(stopOnEntry) {
+                    this.sendEvent('stopOnEntry');
+                } else {
+                    this.run();
+                }
+            })
+            .catch((err) => {
+                this.sendEvent('error', err);
+            });
     }
+
+    // run the program
+    public continue() {
+        this.run();
+    }
+
+    // run the program only one cylce
+    public step() {
+        this.run(true);
+    }
+
+    // internal function managing the prorgam execution
+    // the program will be run depending on the state of the debugger
+    // params:
+    // boolean which signals, if only a single step should be made; default value is false
+    private run(singleStep: boolean = false) {
+        if(singleStep) {
+            this.remoteInterface.step()
+                .then((addr) => {
+                    this.currentCodeLine = this.mapAddrToCodeLine.get(addr);
+                    this.sendEvent('stopOnStep');
+                })
+                .catch((err) => {
+                    this.sendEvent('error', err);
+                });
+        } else {
+            if(this.numberNonBRKBreakpoints===0) {
+                // if we have no breakpoints, which aren't based on BRK statements,
+                // we can savely run the program till a BRK statement comes up
+                this.remoteInterface.run()
+                    .then((addr) => {
+                        this.sendEvent('stopOnBreakpoint');
+                    })
+                    .catch((err) => {
+                        this.sendEvent('error', err);
+                    });
+            } else {
+                // because there are non BRK breakpoints, we run the program step by step, until we reach a codeline with a breakpoint
+                this.loopSteps()
+                    .then(() => {
+                        this.sendEvent('stopOnBreakpoint');
+                    })
+                    .catch((err) => {
+                        this.sendEvent('error', err);
+                    });
+            }
+        }
+    }
+
+    // helper function for looping single cycles until we reached a breakpoint
+    // asynchronous loop
+    // expects:
+    // existance of atleast one breakpoint
+    // no other execution related functions being called, as those might get overwritten by the running loop
+    private loopSteps = () =>
+        this.remoteInterface.step()
+            .then((addr) => {
+                this.currentCodeLine = this.mapAddrToCodeLine.get(addr);
+                let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
+                // if we we do not have a breakpoint at the current codeline, we run another step
+                if(index===-1) {
+                    this.loopSteps();
+                }
+            })
+            .catch((err) => {
+                this.sendEvent('error', err);
+            })
 
     // setting a breakpoint in the given line
     public setBreakpoint(codeline: number): AsmBreakpoint {
@@ -189,22 +281,35 @@ export class AsmDebugger extends EventEmitter {
     // params:
     // codeline at which the breakpoint is set
     public clearBreakpoint(codeline: number): AsmBreakpoint | undefined {
-        // null check for our array of breakpoints
-        if(this.breakpoints) {
-            let index = this.breakpoints.findIndex(bp => bp.codeline === codeline);
-            // if no breakpoint for this line is found (index -1) we can't get and return a breakpoint
-            if(index >= 0) {
-                let breakpoint = this.breakpoints[index];
-                this.breakpoints.splice(index, 1); //removes one element in the array beginning at the position given by index, effectivly deleting the breakpoint from the array
-                return breakpoint;
-            }
+        let index = this.breakpoints.findIndex(bp => bp.codeline === codeline);
+        // if no breakpoint for this line is found (index -1) we can't get and return a breakpoint
+        if(index >= 0) {
+            let breakpoint = this.breakpoints[index];
+            this.breakpoints.splice(index, 1); //removes one element in the array beginning at the position given by index, effectivly deleting the breakpoint from the array
+            return breakpoint;
         }
-        return undefined; // covers two cases: missing array and missing breakpoint corresponsing to given codeline
+        return undefined;
     }
 
     // function for removing all breakpoints at once
     public clearAllBreakpoints() {
         this.breakpoints = new Array<AsmBreakpoint>();
+    }
+
+
+    //
+    // currently we support only a single stackFrame; as such, no parameter for start- and endFrame exist
+    public stack() {
+        // ToDo: implement
+    }
+
+    // for emitting events
+    // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint
+    private sendEvent(event: string, ...args: any[]) {
+        // executes the given function asynchronously as soon as possible (next iteration of the nodeJs event loop)
+        setImmediate(_ => {
+            this.emit(event, ...args);
+        });
     }
 
 }
