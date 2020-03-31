@@ -135,6 +135,7 @@ export class AsmDebugSession extends DebugSession {
 export interface AsmBreakpoint {
     codeline: number;
     id: number;
+    brk: boolean;
 }
 
 export class AsmDebugger extends EventEmitter {
@@ -217,7 +218,8 @@ export class AsmDebugger extends EventEmitter {
         if(singleStep) {
             this.remoteInterface.step()
                 .then((addr) => {
-                    this.currentCodeLine = this.mapAddrToCodeLine.get(addr);
+                    // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
+                    this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
                     this.sendEvent('stopOnStep');
                 })
                 .catch((err) => {
@@ -255,7 +257,8 @@ export class AsmDebugger extends EventEmitter {
     private loopSteps = () =>
         this.remoteInterface.step()
             .then((addr) => {
-                this.currentCodeLine = this.mapAddrToCodeLine.get(addr);
+                // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
+                this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
                 let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
                 // if we we do not have a breakpoint at the current codeline, we run another step
                 if(index===-1) {
@@ -267,9 +270,15 @@ export class AsmDebugger extends EventEmitter {
             })
 
     // setting a breakpoint in the given line
-    public setBreakpoint(codeline: number): AsmBreakpoint {
-        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++};
+    // params:
+    // the codeline at which the breakpoint shall be set
+    // a boolean signaling, if the breakpoints is due to a BRK statement at this line; default value is false
+    // returns:
+    // the new breakpoint
+    public setBreakpoint(codeline: number, brk: boolean = false): AsmBreakpoint {
+        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++, brk};
         this.breakpoints.push(newBreakpoint);
+        if(!brk) { this.numberNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
         return newBreakpoint;
     }
 
@@ -283,7 +292,7 @@ export class AsmDebugger extends EventEmitter {
             let semicolon = line.indexOf(";");
             if(brk!==-1 && brk<semicolon) {
                 // create a breakpoint for this line
-                this.setBreakpoint(index);
+                this.setBreakpoint(index, true);
             }
         });    
     }
@@ -291,12 +300,15 @@ export class AsmDebugger extends EventEmitter {
     // function for removing a single breakpoint
     // params:
     // codeline at which the breakpoint is set
+    // returns:
+    // either the breakpoint that was removed or undefined, if no breakpoint was found at the given codeline
     public clearBreakpoint(codeline: number): AsmBreakpoint | undefined {
         let index = this.breakpoints.findIndex(bp => bp.codeline === codeline);
         // if no breakpoint for this line is found (index -1) we can't get and return a breakpoint
         if(index >= 0) {
             let breakpoint = this.breakpoints[index];
             this.breakpoints.splice(index, 1); //removes one element in the array beginning at the position given by index, effectivly deleting the breakpoint from the array
+            if(!breakpoint.brk) { this.numberNonBRKBreakpoints--; } // decrease tracking number for non BRK breakpoints
             return breakpoint;
         }
         return undefined;
@@ -305,12 +317,17 @@ export class AsmDebugger extends EventEmitter {
     // function for removing all breakpoints at once
     public clearAllBreakpoints() {
         this.breakpoints = new Array<AsmBreakpoint>();
+        this.numberNonBRKBreakpoints = 0;
     }
 
     // function for creating a stacktrace / array of stackframes
     // the returned "frames" closely resemble the frames used by the Debug Adapter Protocol
     // currently we support only a single stackFrame; as such, the parameter for start- and endFrame do nothing
-    public stack(startFrame: number, endFrame: number): any {
+    // params:
+    // start and end number for the stack frames
+    // returns:
+    // an array of stackframes as untyped objects
+    public stack(startFrame: number, endFrame: number): Array<any> {
         let frames = new Array<any>();
 
         let newFrame = {
