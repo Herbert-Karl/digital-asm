@@ -1,4 +1,3 @@
-import * as os from 'os';
 import { DebugProtocol } from 'vscode-debugprotocol';
 
 // representation of breakpoints for our debugger
@@ -17,5 +16,3 @@ export interface AsmLaunchRequestArguments extends DebugProtocol.LaunchRequestAr
     IPofSimulator: string; 
     PortOfSimulator: number;
 }
-
-export const isWindows = os.platform()==='win32';

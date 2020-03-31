@@ -1,7 +1,8 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { EventEmitter } from 'events';
 import { RemoteInterface } from './remoteInterface';
-import { AsmBreakpoint, isWindows } from './utils';
+import { AsmBreakpoint } from './utils';
 
 export class AsmDebugger extends EventEmitter {
 
@@ -224,7 +225,7 @@ export class AsmDebugger extends EventEmitter {
 
         let newFrame = {
             id: 1,
-            name: this.getFileName(),
+            name: path.basename(this.pathToAsmFile),
             source: this.pathToAsmFile,
             line: this.currentCodeLine,
             column: this.getColumn(this.currentCodeLine),
@@ -244,6 +245,11 @@ export class AsmDebugger extends EventEmitter {
         });
     }
 
+    // getter function for the breakpoints variable
+    public get getBreakpoints() {
+        return this.breakpoints;
+    }
+
     // helper function
     // returns the index of the first non-whitespace char in the codeLine referenced by the given line number
     // params:
@@ -253,10 +259,5 @@ export class AsmDebugger extends EventEmitter {
         return codeLine.indexOf(codeLine.trimLeft());
     }
 
-    private getFileName(): string {
-        let seperator = isWindows ? '\\' : '/'; // choosing the file path seperator based on the platform we are currently on 
-        let pathFragments = this.pathToAsmFile.split(seperator);
-        return pathFragments[pathFragments.length-1];
-    }
 
 }
