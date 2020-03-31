@@ -6,6 +6,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import * as vscode from 'vscode';
 import { EventEmitter } from 'events';
 import { RemoteInterface } from './remoteInterface';
+import { AsmBreakpoint, isWindows, AsmLaunchRequestArguments } from './utils';
 
 // the implementation of debugging for the asm files uses the DebugSession based on the Debug Adapter Protocol
 // thereby, the generic debug ui of VS Code will be usable for debugging
@@ -15,7 +16,7 @@ export class AsmDebugSession extends DebugSession {
     // because we do not support multiple threads, we hardcode an id to use as a default
     private static THREAD_ID: 1;
 
-    private debugger: AsmDebugger;
+    private debugger: AsmDebugger | null;
 
     public constructor() {
         super();
@@ -24,8 +25,8 @@ export class AsmDebugSession extends DebugSession {
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
 
-        //
-        this.debugger = new AsmDebugger();
+        // because we can't just start our debugger without additional information, we st a null value
+        this.debugger = null;
     }
 
     // override of the default implementation of the function
@@ -53,6 +54,14 @@ export class AsmDebugSession extends DebugSession {
         // we do not support requests to cancel earlier requests or progress sequences
         response.body.supportsCancelRequest = false;
 
+        this.sendResponse(response);
+    }
+
+    // function for starting the debuggee
+    // our needed arguments are part of our extension for the LaunchRequestArguments
+    // sets up our AsmDebugger
+    protected launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
+        // todo: implement!!!
         this.sendResponse(response);
     }
  
@@ -132,16 +141,11 @@ export class AsmDebugSession extends DebugSession {
     */
 }
 
-export interface AsmBreakpoint {
-    codeline: number;
-    id: number;
-    brk: boolean;
-}
-
 export class AsmDebugger extends EventEmitter {
 
-    private asmFile: vscode.Uri;
-    private hexFile: vscode.Uri;
+    // filesystem correct paths to the asm file and hex file
+    private pathToAsmFile: string;
+    private pathToHexFile: string;
 
     // defines if the BRK Mnemonic shall be used as Breakpoint for debugging
     private brkBreakpoints: boolean = true;
@@ -166,14 +170,14 @@ export class AsmDebugger extends EventEmitter {
     // a boolean controling, if BRK Statements are to be made into breakpoints for debugging
     // expects:
     // the hexFile is the parsed version of the asmFile
-    public constructor(asm: vscode.Uri, hex: vscode.Uri, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
+    public constructor(asm: string, hex: string, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
         super();
 
         this.mapAddrToCodeLine= new Map<number, number>();
         this.breakpoints = new Array<AsmBreakpoint>();
 
-        this.asmFile = asm;
-        this.hexFile = hex;
+        this.pathToAsmFile = asm;
+        this.pathToHexFile = hex;
         this.brkBreakpoints = setBreakpointsAtBRK;
 
         this.remoteInterface = new RemoteInterface(IPofSimulator, PortOfSimulator);
@@ -186,7 +190,7 @@ export class AsmDebugger extends EventEmitter {
         if(this.brkBreakpoints) {
             this.setBreakpointsAtBRK();
         }
-        let pathToHexFile = this.hexFile.fsPath;
+        let pathToHexFile = this.pathToHexFile;
         this.remoteInterface.debug(pathToHexFile)
             .then((addr)=> {
                 if(stopOnEntry) {
@@ -285,7 +289,7 @@ export class AsmDebugger extends EventEmitter {
     // internal function for checking the source code for BRK statements and setting breakpoints for them
     private setBreakpointsAtBRK() {
         // load all lines of the source file
-        let sourceCodeLines = fs.readFileSync(this.asmFile.fsPath, 'utf8').split('\n');
+        let sourceCodeLines = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n');
         // check every line for 'BRK' and if there is a ';' before it
         sourceCodeLines.forEach((line, index) => {
             let brk = line.indexOf("BRK");
@@ -333,7 +337,7 @@ export class AsmDebugger extends EventEmitter {
         let newFrame = {
             id: 1,
             name: this.getFileName(),
-            source: this.asmFile.fsPath,
+            source: this.pathToAsmFile,
             line: this.currentCodeLine,
             column: this.getColumn(this.currentCodeLine),
         };
@@ -357,12 +361,13 @@ export class AsmDebugger extends EventEmitter {
     // params:
     // number of the codeLine
     private getColumn(line: number): number {
-        let codeLine = fs.readFileSync(this.asmFile.fsPath, 'utf8').split('\n')[line]; // reads in the file as a single string, splits it into an array and then only takes the referenced line 
+        let codeLine = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n')[line]; // reads in the file as a single string, splits it into an array and then only takes the referenced line 
         return codeLine.indexOf(codeLine.trimLeft());
     }
 
     private getFileName(): string {
-        let pathFragments = this.asmFile.path.split('/');
+        let seperator = isWindows ? '\\' : '/'; // choosing the file path seperator based on the platform we are currently on 
+        let pathFragments = this.pathToAsmFile.split(seperator);
         return pathFragments[pathFragments.length-1];
     }
 
