@@ -1,4 +1,5 @@
-import { DebugSession, StoppedEvent } from 'vscode-debugadapter';
+import * as path from 'path';
+import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { AsmLaunchRequestArguments } from './utils';
 import { AsmDebugger } from './asmDebugger';
@@ -102,8 +103,29 @@ export class AsmDebugSession extends DebugSession {
     // the request contains all expected breakpoints
     // the response must return information about all actual created breakpoints
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): void {
-        // ToDo: implement!!!
-        this.sendResponse(response);
+        // debugger not started yet
+        if(this.debugger===null) {
+
+        } else {
+            let currentBreakpoints = this.debugger.getBreakpoints;
+            // get wanted breakpoints
+            let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
+            // set a breakpoint for every requested one
+            breakpoints.forEach((elem, index) => {
+                let bp = this.debugger?.setBreakpoint(elem.line);
+                // condition should always be true, as we already earlier checked for this.debugger to exist
+                // the undefined is only needed, because the null check for this.debugger doesn't apply in the forEach loop
+                // as such, typescript thinks, that the function call on this.debugger might fail due to null and bp subsequent would become undefined
+                if(bp!==undefined) {
+                    currentBreakpoints.splice(index, 0, bp); // add the new breakpoint into the array in order of creation; due to using the indexes, the new breakpoints occupy the array from the beginning
+                }       
+            });
+            
+            // mapping our asmBreakpoints into the DAP breakpoints and setting them into the response
+            response.body.breakpoints = currentBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: true, source: args.source});
+
+            this.sendResponse(response);
+        }
     }
     
     // override of the default implementation of the function
@@ -158,25 +180,41 @@ export class AsmDebugSession extends DebugSession {
         this.debugger?.stop();
         this.sendResponse(response);
 	}
-
-    // override of the default implementation of the function
-    // request for the referenced source code
-    protected sourceRequest(response: DebugProtocol.SourceResponse, args: DebugProtocol.SourceArguments, request?: DebugProtocol.Request) : void {
-        // ToDo: implement!!!
-        this.sendResponse(response);
-    }
     
     // override of the default implementation of the function
     // request for the stackFrames of the referenced thread
     // importantly, the stackFrame contains the information, which line the program is currently at
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request): void {
-        // ToDo: Implement!!!
+        let startFrame = typeof args.startFrame === 'number' ? args.startFrame : 0;
+        let endFrame = startFrame + (typeof args.levels === 'number' ? args.levels : 1);
+        
+        // we omit a null check, because the launchRequest should have happened beforehand
+        let stk = this.debugger?.stack(startFrame, endFrame);
+
+        // converting the returned quasi stackFrames into proper ones
+        let properStk = stk?.map(f => new StackFrame(f.id, f.name, this.createSource(f.source), f.line, f.column)) || new Array<StackFrame>(); // default variant should never happen, but is necessary to set the response body without null/undefined checks
+        response.body = {
+            totalFrames: properStk.length,
+            stackFrames: properStk
+        };
+        
         this.sendResponse(response);
 	}
 
     /*
-        requests for Evaluate, Scopes and Variables aren't implemented (empty base implementation used)
+        requests for Evaluate, Source, Scopes and Variables aren't implemented (empty base implementation used)
         because we do not support these things
         but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
+
+    // helper function for creating a Source object for a given filePath
+    // we don't give a sourceReference for the file
+    // params:
+    // filePath as string
+    // returns:
+    // Source object corresponding to the given filePath
+    private createSource(filePath: string): Source {
+        return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath), undefined);
+    }
+
 }
