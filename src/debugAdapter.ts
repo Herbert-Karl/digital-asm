@@ -1,3 +1,3 @@
-import { AsmDebugSession } from './asmDebug';
+import { AsmDebugSession } from './asmDebugSession';
 
 AsmDebugSession.run(AsmDebugSession);
