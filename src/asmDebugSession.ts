@@ -72,6 +72,9 @@ export class AsmDebugSession extends DebugSession {
         this.debugger.on('stopOnBreakpoint', () => {
             this.sendEvent(new StoppedEvent('breakpoint', AsmDebugSession.THREAD_ID));
         });
+        this.debugger.on('pause', () => {
+            this.sendEvent(new StoppedEvent('pause', AsmDebugSession.THREAD_ID));
+        });
 
         // launching/starting
         let stopOnEntry = true;
@@ -89,7 +92,8 @@ export class AsmDebugSession extends DebugSession {
     // associated with the capability "supportsRestartRequest"
     // response is empty / just an acknowledgement that the request has been done
     protected restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request): void {
-        // ToDo: Implement!!!
+        // we omit a null check, because the launchRequest should have happened beforehand
+        this.debugger?.restart(true);
         this.sendResponse(response);
 	}
 
@@ -105,7 +109,9 @@ export class AsmDebugSession extends DebugSession {
     // override of the default implementation of the function
     // (re)start running the program
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request) : void {
-        // ToDo: Implement!!!
+        // we omit a null check, because the launchRequest should have happened beforehand
+        this.debugger?.continue();
+        response.body.allThreadsContinued = false; // as we only have one thread, we signal, that we only continued one thread (marked by the thread id in the request)
         this.sendResponse(response);
     }
     
@@ -148,7 +154,8 @@ export class AsmDebugSession extends DebugSession {
     // request to stop executing the program
     // the response is only an acknowledgement
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request) : void {
-        // ToDo: Implement!!!
+        // we omit a null check, because the launchRequest should have happened beforehand
+        this.debugger?.stop();
         this.sendResponse(response);
 	}
 

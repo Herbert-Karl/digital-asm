@@ -52,8 +52,7 @@ export class AsmDebugger extends EventEmitter {
         if(this.brkBreakpoints) {
             this.setBreakpointsAtBRK();
         }
-        let pathToHexFile = this.pathToHexFile;
-        this.remoteInterface.debug(pathToHexFile)
+        this.remoteInterface.debug(this.pathToHexFile)
             .then((addr)=> {
                 if(stopOnEntry) {
                     this.sendEvent('stopOnEntry');
@@ -74,6 +73,33 @@ export class AsmDebugger extends EventEmitter {
     // run the program only one cylce
     public step() {
         this.run(true);
+    }
+
+    // stop the current running program
+    public stop() {
+        this.remoteInterface.stop()
+            .then((addr)=> {
+                this.sendEvent('pause');
+            })
+            .catch((err) => {
+                this.sendEvent('error', err);
+            });
+    }
+
+    // variation if the start function
+    // because it's a restart, we don't add breakpoints
+    public restart(stopOnEntry: boolean) {
+        this.remoteInterface.debug(this.pathToHexFile)
+            .then((addr)=> {
+                if(stopOnEntry) {
+                    this.sendEvent('stopOnEntry');
+                } else {
+                    this.run();
+                }
+            })
+            .catch((err) => {
+                this.sendEvent('error', err);
+            });
     }
 
     // internal function managing the prorgam execution
@@ -210,7 +236,7 @@ export class AsmDebugger extends EventEmitter {
     }
 
     // for emitting events
-    // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint
+    // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint, pause
     private sendEvent(event: string, ...args: any[]) {
         // executes the given function asynchronously as soon as possible (next iteration of the nodeJs event loop)
         setImmediate(_ => {
