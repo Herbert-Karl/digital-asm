@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { DebugSession } from 'vscode-debugadapter';
+import { DebugSession, StoppedEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
@@ -60,8 +60,33 @@ export class AsmDebugSession extends DebugSession {
     // function for starting the debuggee
     // our needed arguments are part of our extension for the LaunchRequestArguments
     // sets up our AsmDebugger
+    // response is empty / just an acknowledgement
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
-        // todo: implement!!!
+        this.debugger = new AsmDebugger(args.pathToAsmFile, args.pathToHexFile, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
+
+        // subscribing to the known events of our AsmDebugger
+        this.debugger.on('error', (err) => {
+            this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err));
+        });
+        this.debugger.on('stopOnEntry', () => {
+            this.sendEvent(new StoppedEvent('entry', AsmDebugSession.THREAD_ID));
+        });
+        this.debugger.on('stopOnStep', () => {
+            this.sendEvent(new StoppedEvent('step', AsmDebugSession.THREAD_ID));
+        });
+        this.debugger.on('stopOnBreakpoint', () => {
+            this.sendEvent(new StoppedEvent('breakpoint', AsmDebugSession.THREAD_ID));
+        });
+
+        // launching/starting
+        let stopOnEntry = true;
+        if(args.noDebug!==undefined) {
+            // if the launchrequestarguments contain an information about the debugging we use it
+            // but we negate noDebug in order to match the semantic of stopOnEntry (noDebug true would mean that we shouldn't stopOnEntry/shoudl just run the program)
+            stopOnEntry = !args.noDebug;
+        }
+        this.debugger.start(stopOnEntry);
+
         this.sendResponse(response);
     }
  
@@ -92,23 +117,36 @@ export class AsmDebugSession extends DebugSession {
     // override of the default implementation of the function
     // running the program for one step
     // the response is only an acknowledgement, so no content is required
+    // expects:
+    // debugger was succesfully constructed via launchRequest
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request) : void {
-        // ToDo: Implement!!!
+        // we omit a null check, because the launchRequest should have happened beforehand
+        this.debugger?.step();
         this.sendResponse(response);
 	}
 
     // override of the default implementation of the function
     // request for stepping into a function if possible
     // because it isn't feasible for our language, we make one step instead
+    // the response is emtpy/ an acknowledgement
+    // expects:
+    // debugger was succesfully constructed via launchRequest
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request) : void {
-		this.nextRequest(response, args, request);
+		// we omit a null check, because the launchRequest should have happened beforehand
+        this.debugger?.step();
+        this.sendResponse(response);
 	}
     
     // override of the default implementation of the function
     // request for stepping out off a function if possible
     // because it isn't feasible for our language, we make one step instead
+    // the response is emtpy/ an acknowledgement
+    // expects:
+    // debugger was succesfully constructed via launchRequest
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request) : void {
-		this.nextRequest(response, args, request);
+        // we omit a null check, because the launchRequest should have happened beforehand
+        this.debugger?.step();
+        this.sendResponse(response);
 	}
 
     // override of the default implementation of the function
