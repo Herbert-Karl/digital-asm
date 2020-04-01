@@ -11,6 +11,7 @@ import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
 let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "127.0.0.1");
 let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
+let brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -20,6 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
         asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
         simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "127.0.0.1");
         simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
+        brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
     });
 
     // registering commands
@@ -38,12 +40,15 @@ export function activate(context: vscode.ExtensionContext) {
     // registering our provider for hovers
     let hoverProvider = vscode.languages.registerHoverProvider('asm', new AsmHoverProvider());
 
+    // passing our debug configuration provider for our debugger type
+    let asmDebugConfigProvider = vscode.debug.registerDebugConfigurationProvider('digital-conn', new AsmConfigurationProvider());
+
     // adding the implementation of the commands to the context of the extension,
     //so that the implementations will be executed, when the commands are called
     context.subscriptions.push(parseAsm, runAsm, getFileName);
 
     // adding our providers to the context of the extension
-    context.subscriptions.push(completionProvider, hoverProvider);
+    context.subscriptions.push(completionProvider, hoverProvider, asmDebugConfigProvider);
 
 }
 
@@ -192,6 +197,17 @@ class AsmHoverProvider implements vscode.HoverProvider {
         let word = document.getText(range);
 
         return this.hoverMap.get(word);
+    }
+
+}
+
+class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
+
+    // function for ...
+    // gets called before variables are substituted in the launch configuration
+    public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): Promise<vscode.DebugConfiguration> {
+        // ToDo: implement!!!
+        return debugConfiguration;
     }
 
 }

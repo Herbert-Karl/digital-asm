@@ -58,7 +58,7 @@ export class AsmDebugSession extends DebugSession {
     // sets up our AsmDebugger
     // response is empty / just an acknowledgement
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
-        this.debugger = new AsmDebugger(args.pathToAsmFile, args.pathToHexFile, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
+        this.debugger = new AsmDebugger(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
 
         // subscribing to the known events of our AsmDebugger
         this.debugger.on('error', (err) => {
