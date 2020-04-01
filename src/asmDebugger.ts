@@ -191,7 +191,7 @@ export class AsmDebugger extends EventEmitter {
         sourceCodeLines.forEach((line, index) => {
             let brk = line.indexOf("BRK");
             let semicolon = line.indexOf(";");
-            if(brk!==-1 && brk<semicolon) {
+            if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
                 // create a breakpoint for this line
                 this.setBreakpoint(index, true);
             }
