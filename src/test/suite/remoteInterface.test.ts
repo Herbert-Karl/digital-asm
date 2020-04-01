@@ -29,8 +29,8 @@ suite('RemoteInterface Test Suite', () => {
 		});
 
 		let remoteInterface = new RemoteInterface("localhost", 27322);
-		assert.equal(await remoteInterface.step(), "  ok:001f");
-		assert.equal(await remoteInterface.run(), "  ok:001f");
+		assert.equal(await remoteInterface.step(), 31);
+		assert.equal(await remoteInterface.run(), 31);
 
 		// cleanup
 		server.close();
