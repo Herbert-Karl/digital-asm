@@ -205,8 +205,35 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
     // function for ...
     // gets called before variables are substituted in the launch configuration
-    public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): Promise<vscode.DebugConfiguration> {
-        // ToDo: implement!!!
+    public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): Promise<vscode.DebugConfiguration | null> {
+        
+        let file: string | undefined = debugConfiguration.file; 
+
+        // if the debug configuration isnt given a path for the file, we try to infer the file meant via the active editor
+        if(file===undefined || !fs.existsSync(file)) {    
+            let help = vscode.window.activeTextEditor;
+            if(help===undefined) {
+                // if there is neither a given path nor an active text editor, we return while showing an error message
+                vscode.window.showErrorMessage("No given or active file.");
+                console.error("No given or active file.");
+                return null;
+            }
+            file = help.document.uri.fsPath;
+        }
+
+        // if either the hex file or map file for te asm file doesn't exist as same name files, we parse the asm file to create those
+        if(!fs.existsSync(file.replace(".asm", ".hex")) || !fs.existsSync(file.replace(".asm", ".map"))) {
+            commandParseAsm(await vscode.workspace.openTextDocument(vscode.Uri.file(file)));
+        }
+
+        // putting our needed information into the debugConfiguration
+        debugConfiguration.pathToAsmFile = file;
+        debugConfiguration.pathToHexFile = file.replace(".asm", ".hex");
+        debugConfiguration.pathToAsmHexMapping = file.replace(".asm", ".map");
+        debugConfiguration.setBreakpointsAtBRK = brkHandling;
+        debugConfiguration.IPofSimulator = simulatorHost;
+        debugConfiguration.PortofSimulator = simulatorPort;
+        
         return debugConfiguration;
     }
 
