@@ -46,9 +46,9 @@ export class AsmDebugger extends EventEmitter {
 
         // loading the mapping of hex addresses to asm codelines
         let rawdata = fs.readFileSync(map);
-        let mapping = JSON.parse(rawdata.toString('utf8'));
-        mapping.array.forEach(elem => {
-            this.mapAddrToCodeLine.set(mapping.addr, mapping.line);
+        let mapping: Array<{addr:number, line:number}> = JSON.parse(rawdata.toString('utf8'));
+        mapping.forEach(elem => {
+            this.mapAddrToCodeLine.set(elem.addr, elem.line);
         });
 
         this.remoteInterface = new RemoteInterface(IPofSimulator, PortOfSimulator);
