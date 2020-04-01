@@ -29,11 +29,12 @@ export class AsmDebugger extends EventEmitter {
 
     // contructor for creating debugger and defining the important internal variables
     // params:
-    // Uris to the asmFile and hexFile
+    // Uris to the asmFile, hexFile and mappingFile
     // a boolean controling, if BRK Statements are to be made into breakpoints for debugging
     // expects:
     // the hexFile is the parsed version of the asmFile
-    public constructor(asm: string, hex: string, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
+    // the mappingFile contains a json array of hex addresses to asm codelines
+    public constructor(asm: string, hex: string, map: string, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
         super();
 
         this.mapAddrToCodeLine= new Map<number, number>();
@@ -42,6 +43,13 @@ export class AsmDebugger extends EventEmitter {
         this.pathToAsmFile = asm;
         this.pathToHexFile = hex;
         this.brkBreakpoints = setBreakpointsAtBRK;
+
+        // loading the mapping of hex addresses to asm codelines
+        let rawdata = fs.readFileSync(map);
+        let mapping = JSON.parse(rawdata.toString('utf8'));
+        mapping.array.forEach(elem => {
+            this.mapAddrToCodeLine.set(mapping.addr, mapping.line);
+        });
 
         this.remoteInterface = new RemoteInterface(IPofSimulator, PortOfSimulator);
     }
