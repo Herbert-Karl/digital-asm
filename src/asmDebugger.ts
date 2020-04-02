@@ -7,8 +7,8 @@ import { AsmBreakpoint } from './utils';
 export class AsmDebugger extends EventEmitter {
 
     // filesystem correct paths to the asm file and hex file
-    private pathToAsmFile: string;
-    private pathToHexFile: string;
+    private pathToAsmFile: string = "";
+    private pathToHexFile: string = "";
 
     // defines if the BRK Mnemonic shall be used as Breakpoint for debugging
     private brkBreakpoints: boolean = true;
@@ -28,18 +28,27 @@ export class AsmDebugger extends EventEmitter {
     private remoteInterface: RemoteInterface;
 
     // contructor for creating debugger and defining the important internal variables
+    // a call to config() should follow before using the debugger
+    // the returned object can already be used for setting up event liseteners
+    public constructor() {
+        super();
+
+        this.mapAddrToCodeLine= new Map<number, number>();
+        this.breakpoints = new Array<AsmBreakpoint>();
+
+        // this is just a dummy remoteInterface, which shouldn't be used
+        this.remoteInterface = new RemoteInterface("localhost", 8080);
+    }
+
+    // function for defining the important internal variables
+    // which should be called before actually using this debugger
     // params:
     // Uris to the asmFile, hexFile and mappingFile
     // a boolean controling, if BRK Statements are to be made into breakpoints for debugging
     // expects:
     // the hexFile is the parsed version of the asmFile
     // the mappingFile contains a json array of hex addresses to asm codelines
-    public constructor(asm: string, hex: string, map: string, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
-        super();
-
-        this.mapAddrToCodeLine= new Map<number, number>();
-        this.breakpoints = new Array<AsmBreakpoint>();
-
+    public config(asm: string, hex: string, map: string, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
         this.pathToAsmFile = asm;
         this.pathToHexFile = hex;
         this.brkBreakpoints = setBreakpointsAtBRK;
