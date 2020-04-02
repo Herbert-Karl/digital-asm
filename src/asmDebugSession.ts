@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint } from 'vscode-debugadapter';
+import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { AsmLaunchRequestArguments } from './utils';
 import { AsmDebugger } from './asmDebugger';
@@ -12,7 +12,7 @@ export class AsmDebugSession extends DebugSession {
     // because we do not support multiple threads, we hardcode an id to use as a default
     private static THREAD_ID: 1;
 
-    private debugger: AsmDebugger | null;
+    private debugger: AsmDebugger;
 
     public constructor() {
         super();
@@ -21,8 +21,26 @@ export class AsmDebugSession extends DebugSession {
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
 
-        // because we can't just start our debugger without additional information, we st a null value
-        this.debugger = null;
+        // creating the debugger object in the constructor to set up event listeners 
+        this.debugger = new AsmDebugger();
+
+        // subscribing to the known events of our AsmDebugger
+        this.debugger.on('error', (err) => {
+            this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err));
+        });
+        this.debugger.on('stopOnEntry', () => {
+            this.sendEvent(new StoppedEvent('entry', AsmDebugSession.THREAD_ID));
+        });
+        this.debugger.on('stopOnStep', () => {
+            this.sendEvent(new StoppedEvent('step', AsmDebugSession.THREAD_ID));
+        });
+        this.debugger.on('stopOnBreakpoint', () => {
+            this.sendEvent(new StoppedEvent('breakpoint', AsmDebugSession.THREAD_ID));
+        });
+        this.debugger.on('pause', () => {
+            this.sendEvent(new StoppedEvent('pause', AsmDebugSession.THREAD_ID));
+        });
+
     }
 
     // override of the default implementation of the function
@@ -58,24 +76,11 @@ export class AsmDebugSession extends DebugSession {
     // sets up our AsmDebugger
     // response is empty / just an acknowledgement
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
-        this.debugger = new AsmDebugger(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
+        // passing the configuration into our asmDebugger to make it actually usable
+        this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
 
-        // subscribing to the known events of our AsmDebugger
-        this.debugger.on('error', (err) => {
-            this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err));
-        });
-        this.debugger.on('stopOnEntry', () => {
-            this.sendEvent(new StoppedEvent('entry', AsmDebugSession.THREAD_ID));
-        });
-        this.debugger.on('stopOnStep', () => {
-            this.sendEvent(new StoppedEvent('step', AsmDebugSession.THREAD_ID));
-        });
-        this.debugger.on('stopOnBreakpoint', () => {
-            this.sendEvent(new StoppedEvent('breakpoint', AsmDebugSession.THREAD_ID));
-        });
-        this.debugger.on('pause', () => {
-            this.sendEvent(new StoppedEvent('pause', AsmDebugSession.THREAD_ID));
-        });
+        // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
+        this.sendEvent(new InitializedEvent());
 
         // launching/starting
         let stopOnEntry = true;
@@ -94,7 +99,7 @@ export class AsmDebugSession extends DebugSession {
     // response is empty / just an acknowledgement that the request has been done
     protected restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request): void {
         // we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger?.restart(true);
+        this.debugger.restart(true);
         this.sendResponse(response);
 	}
 
@@ -103,36 +108,26 @@ export class AsmDebugSession extends DebugSession {
     // the request contains all expected breakpoints
     // the response must return information about all actual created breakpoints
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): void {
-        // debugger not started yet
-        if(this.debugger===null) {
-
-        } else {
-            let currentBreakpoints = this.debugger.getBreakpoints;
+        // before setting the new set of breakpoints, we remove the old ones
+        this.debugger.clearAllBreakpoints();
             // get wanted breakpoints
             let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
             // set a breakpoint for every requested one
-            breakpoints.forEach((elem, index) => {
-                let bp = this.debugger?.setBreakpoint(elem.line);
-                // condition should always be true, as we already earlier checked for this.debugger to exist
-                // the undefined is only needed, because the null check for this.debugger doesn't apply in the forEach loop
-                // as such, typescript thinks, that the function call on this.debugger might fail due to null and bp subsequent would become undefined
-                if(bp!==undefined) {
-                    currentBreakpoints.splice(index, 0, bp); // add the new breakpoint into the array in order of creation; due to using the indexes, the new breakpoints occupy the array from the beginning
-                }       
+        breakpoints.forEach(elem => {
+            let bp = this.debugger.setBreakpoint(elem.line);      
             });
             
             // mapping our asmBreakpoints into the DAP breakpoints and setting them into the response
-            response.body.breakpoints = currentBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: true, source: args.source});
+        response.body.breakpoints = this.debugger.getBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: true, source: args.source});
 
             this.sendResponse(response);
         }
-    }
     
     // override of the default implementation of the function
     // (re)start running the program
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request) : void {
         // we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger?.continue();
+        this.debugger.continue();
         response.body.allThreadsContinued = false; // as we only have one thread, we signal, that we only continued one thread (marked by the thread id in the request)
         this.sendResponse(response);
     }
@@ -144,7 +139,7 @@ export class AsmDebugSession extends DebugSession {
     // debugger was succesfully constructed via launchRequest
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request) : void {
         // we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger?.step();
+        this.debugger.step();
         this.sendResponse(response);
 	}
 
@@ -156,7 +151,7 @@ export class AsmDebugSession extends DebugSession {
     // debugger was succesfully constructed via launchRequest
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request) : void {
 		// we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger?.step();
+        this.debugger.step();
         this.sendResponse(response);
 	}
     
@@ -168,7 +163,7 @@ export class AsmDebugSession extends DebugSession {
     // debugger was succesfully constructed via launchRequest
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request) : void {
         // we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger?.step();
+        this.debugger.step();
         this.sendResponse(response);
 	}
 
@@ -177,7 +172,19 @@ export class AsmDebugSession extends DebugSession {
     // the response is only an acknowledgement
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request) : void {
         // we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger?.stop();
+        this.debugger.stop();
+        this.sendResponse(response);
+	}
+    
+    // override of the default implementation of the function
+    // request for all threads in the current debugger state
+    // we support/use only one thread, so we jsut return a default thread
+    protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
+		response.body = {
+			threads: [
+				new Thread(AsmDebugSession.THREAD_ID, "thread 1")
+			]
+		};
         this.sendResponse(response);
 	}
     
@@ -189,10 +196,10 @@ export class AsmDebugSession extends DebugSession {
         let endFrame = startFrame + (typeof args.levels === 'number' ? args.levels : 1);
         
         // we omit a null check, because the launchRequest should have happened beforehand
-        let stk = this.debugger?.stack(startFrame, endFrame);
+        let stk = this.debugger.stack(startFrame, endFrame);
 
         // converting the returned quasi stackFrames into proper ones
-        let properStk = stk?.map(f => new StackFrame(f.id, f.name, this.createSource(f.source), f.line, f.column)) || new Array<StackFrame>(); // default variant should never happen, but is necessary to set the response body without null/undefined checks
+        let properStk = stk.map(f => new StackFrame(f.id, f.name, this.createSource(f.source), f.line, f.column));
         response.body = {
             totalFrames: properStk.length,
             stackFrames: properStk
