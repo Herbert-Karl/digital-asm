@@ -75,14 +75,14 @@ export class RemoteInterface {
                        
             // when the socket is connected, we write our command
             socket.on('connect', function() {
-            if(args!=="") {
-                command = command+":"+args;
-            }
-            let length = RemoteInterface.getUTF8ByteLength(command);
-            // we add the length of the command infront of the command before writing,
-            // because the simulator on the other end needs/excepts this information 
-            // (specialty of the DataOutputStream/DataInputStream used in the java program)
-            socket.write(length+command);
+                if(args!=="") {
+                    command = command+":"+args;
+                }
+                let length = RemoteInterface.getUTF8ByteLength(command);
+                // we add the length of the command infront of the command before writing,
+                // because the simulator on the other end needs/excepts this information 
+                // (specialty of the DataOutputStream/DataInputStream used in the java program)
+                socket.write(length+command);
             });
 
             // when the socket gets the data, we end the socket connection and return the data from the connection

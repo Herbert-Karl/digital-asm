@@ -9,7 +9,7 @@ import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
 // plugin settings
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
-let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "127.0.0.1");
+let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "localhost");
 let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
 let brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
 
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
     // if the configuration of the workspace changes, we simply override our values referencing the plugin settings
     vscode.workspace.onDidChangeConfiguration(() => {
         asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
-        simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "127.0.0.1");
+        simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "localhost");
         simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
         brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
     });
@@ -232,7 +232,7 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
         debugConfiguration.pathToAsmHexMapping = file.replace(".asm", ".map");
         debugConfiguration.setBreakpointsAtBRK = brkHandling;
         debugConfiguration.IPofSimulator = simulatorHost;
-        debugConfiguration.PortofSimulator = simulatorPort;
+        debugConfiguration.PortOfSimulator = simulatorPort;
         
         return debugConfiguration;
     }
