@@ -15,7 +15,7 @@
     },
     "license": "GPL-3.0-or-later",
     "categories": [
-        "Programming Languages"
+        "Programming Languages", "Debuggers"
     ],
     "keywords": [
         "assembler, digital"

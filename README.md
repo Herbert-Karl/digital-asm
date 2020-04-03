@@ -1,4 +1,4 @@
-# digital-asm 
+# digital-asm
 
 [![](https://vsmarketplacebadge.apphb.com/version/Herbert-Karl.digital-asm.svg)](https://marketplace.visualstudio.com/items?itemName=Herbert-Karl.digital-asm)
 
@@ -13,6 +13,7 @@ It is created as part of a study work at the DHBW Mosbach.
   * Running file in the digital simulator
 * code completion for asm mnemonics
 * hover texts for asm mnemonics
+* Debugging of `.asm` files in the digital simulator
 
 ## Requirements
 
@@ -25,7 +26,7 @@ These are not included in the extension and have to be downloaded seperately.
 
 This extension contributes the following settings:
 
-* `asm.simulatorHost`: ip address of the host running the digital simulator 
+* `asm.simulatorHost`: ip address of the host running the digital simulator
 * `asm.simulatorPort`: port, at which the digital simulator runs its TcpListener
 * `asm.assembler`: location of the jar file of the ASM3 programm
 * `asm.brkHandling`: option to handle BRK Mnemonics as BreakPoints when debugging
