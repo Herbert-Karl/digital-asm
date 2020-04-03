@@ -10,7 +10,7 @@ import { AsmDebugger } from './asmDebugger';
 export class AsmDebugSession extends DebugSession {
     
     // because we do not support multiple threads, we hardcode an id to use as a default
-    private static THREAD_ID: 1;
+    private static THREAD_ID = 1;
 
     private debugger: AsmDebugger;
 
@@ -171,7 +171,6 @@ export class AsmDebugSession extends DebugSession {
     // request to stop executing the program
     // the response is only an acknowledgement
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request) : void {
-        // we omit a null check, because the launchRequest should have happened beforehand
         this.debugger.stop();
         this.sendResponse(response);
 	}
