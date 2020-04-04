@@ -3,7 +3,6 @@ import * as fs from 'fs';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { RemoteInterface } from './remoteInterface';
 import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
@@ -43,12 +42,15 @@ export function activate(context: vscode.ExtensionContext) {
     // passing our debug configuration provider for our debugger type
     let asmDebugConfigProvider = vscode.debug.registerDebugConfigurationProvider('digital-conn', new AsmConfigurationProvider());
 
+    // creating our tracker object for our asm debug session
+    let tracker = vscode.debug.registerDebugAdapterTrackerFactory('digital-conn', new AsmDebugTrackerFactory());
+
     // adding the implementation of the commands to the context of the extension,
     //so that the implementations will be executed, when the commands are called
     context.subscriptions.push(parseAsm, runAsm, getFileName);
 
     // adding our providers to the context of the extension
-    context.subscriptions.push(completionProvider, hoverProvider, asmDebugConfigProvider);
+    context.subscriptions.push(completionProvider, hoverProvider, asmDebugConfigProvider, tracker);
 
 }
 
@@ -206,11 +208,11 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
     // function for ...
     // gets called before variables are substituted in the launch configuration
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): Promise<vscode.DebugConfiguration | null> {
-        
-        let file: string | undefined = debugConfiguration.file; 
+
+        let file: string | undefined = debugConfiguration.file;
 
         // if the debug configuration isnt given a path for the file, we try to infer the file meant via the active editor
-        if(file===undefined || !fs.existsSync(file)) {    
+        if(file===undefined || !fs.existsSync(file)) {
             let help = vscode.window.activeTextEditor;
             if(help===undefined) {
                 // if there is neither a given path nor an active text editor, we return while showing an error message
@@ -233,8 +235,52 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
         debugConfiguration.setBreakpointsAtBRK = brkHandling;
         debugConfiguration.IPofSimulator = simulatorHost;
         debugConfiguration.PortOfSimulator = simulatorPort;
-        
+
         return debugConfiguration;
+    }
+
+}
+
+// class implemented to log the messages of the debug adapter protocol between the vscode generic debug ui and a running debug adapter
+// useful for checking, which requests and responses are send between those two as well as the content of those messages
+// the messages are written to a read-only outputchannel
+class AsmDebugTracker implements vscode.DebugAdapterTracker {
+
+    private channel: vscode.OutputChannel;
+
+    constructor() {
+        this.channel = vscode.window.createOutputChannel("digital-asm DAP log");
+    }
+
+    public onWillStartSession() {
+        this.channel.appendLine("Session with debug adapter starting ...");
+    }
+
+    public onWillReceiveMessage(message: any) {
+        this.channel.appendLine("From VS Code: "+JSON.stringify(message));
+    }
+
+    public onDidSendMessage(message: any) {
+        this.channel.appendLine("To VS Code: "+JSON.stringify(message));
+    }
+
+    public onWillStopSession() {
+        this.channel.appendLine("Session with debug adapter ended");
+    }
+
+    // clean up function to free ressources associated with the output channel
+    dispose() {
+        this.channel.dispose();
+    }
+
+}
+
+// factory class for producing a tracker for a given debug session
+class AsmDebugTrackerFactory implements vscode.DebugAdapterTrackerFactory {
+
+    // because we use the tracker only to log the messages exchanges in the debug session, we do not use the debug session object
+    public createDebugAdapterTracker(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterTracker> {
+        return new AsmDebugTracker();
     }
 
 }
