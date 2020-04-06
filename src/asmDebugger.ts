@@ -101,7 +101,7 @@ export class AsmDebugger extends EventEmitter {
     // the program will be run depending on the state of the debugger
     // params:
     // boolean which signals, if only a single step should be made; default value is false
-    private run(singleStep: boolean = false) {
+    private async run(singleStep: boolean = false) {
         if(singleStep) {
             this.remoteInterface.step()
                 .then((addr) => {
@@ -126,36 +126,25 @@ export class AsmDebugger extends EventEmitter {
                     });
             } else {
                 // because there are non BRK breakpoints, we run the program step by step, until we reach a codeline with a breakpoint
-                this.loopSteps()
-                    .then(() => {
-                        this.sendEvent('stopOnBreakpoint');
-                    })
-                    .catch((err) => {
+                let looping: boolean = true;
+                while(looping) {
+                    try {
+                        let addr = await this.remoteInterface.step();
+                        // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
+                        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
+                        let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
+                        // if we have a breakpoint at the current codeline, we stop
+                        if(index!==-1) {
+                            looping = false;
+                            this.sendEvent('stopOnBreakpoint');
+                        }
+                    } catch(err) {  // for possible errors when await -ing 
                         this.sendEvent('error', err);
-                    });
+                    }
+                }
             }
         }
     }
-
-    // helper function for looping single cycles until we reached a breakpoint
-    // asynchronous loop
-    // expects:
-    // existance of atleast one breakpoint
-    // no other execution related functions being called, as those might get overwritten by the running loop
-    private loopSteps = () =>
-        this.remoteInterface.step()
-            .then((addr) => {
-                // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
-                this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
-                let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
-                // if we we do not have a breakpoint at the current codeline, we run another step
-                if(index===-1) {
-                    this.loopSteps();
-                }
-            })
-            .catch((err) => {
-                this.sendEvent('error', err);
-            })
 
     // setting a breakpoint in the given line
     // params:

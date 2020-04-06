@@ -223,10 +223,8 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
             file = help.document.uri.fsPath;
         }
 
-        // if either the hex file or map file for te asm file doesn't exist as same name files, we parse the asm file to create those
-        if(!fs.existsSync(file.replace(".asm", ".hex")) || !fs.existsSync(file.replace(".asm", ".map"))) {
-            commandParseAsm(await vscode.workspace.openTextDocument(vscode.Uri.file(file)));
-        }
+        // we parse the asm file to create .hex and .map files, which are up to date with the current .asm file
+        commandParseAsm(await vscode.workspace.openTextDocument(vscode.Uri.file(file)));
 
         // putting our needed information into the debugConfiguration
         debugConfiguration.pathToAsmFile = file;
