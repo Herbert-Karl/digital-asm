@@ -101,23 +101,6 @@ export class AsmDebugger extends EventEmitter {
             });
     }
 
-    // variation if the start function
-    // because it's a restart, we don't add breakpoints
-    public restart(stopOnEntry: boolean) {
-        this.remoteInterface.debug(this.pathToHexFile)
-            .then((addr)=> {
-                this.currentCodeLine = this.getFirstCodeLine();
-                if(stopOnEntry) {
-                    this.sendEvent('stopOnEntry');
-                } else {
-                    this.run();
-                }
-            })
-            .catch((err) => {
-                this.sendEvent('error', err);
-            });
-    }
-
     // internal function managing the prorgam execution
     // the program will be run depending on the state of the debugger
     // params:
@@ -139,6 +122,7 @@ export class AsmDebugger extends EventEmitter {
                 // we can savely run the program till a BRK statement comes up
                 this.remoteInterface.run()
                     .then((addr) => {
+                        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
                         this.sendEvent('stopOnBreakpoint');
                     })
                     .catch((err) => {
