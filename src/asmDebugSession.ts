@@ -1,9 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread } from 'vscode-debugadapter';
+import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { AsmLaunchRequestArguments } from './utils';
 import { AsmDebugger } from './asmDebugger';
+const { Subject } = require('await-notify');
 
 // the implementation of debugging for the asm files uses the DebugSession based on the Debug Adapter Protocol
 // thereby, the generic debug ui of VS Code will be usable for debugging
@@ -16,6 +17,9 @@ export class AsmDebugSession extends DebugSession {
     private debugger: AsmDebugger;
 
     private breakpointsOnBRKStatements: boolean;
+
+    // used internaly to await/notify ourselves when the configuration is done and we can proceed with lauchning the debugger
+    private configurationDone = new Subject();
 
     public constructor() {
         super();
@@ -61,8 +65,8 @@ export class AsmDebugSession extends DebugSession {
         // flags without explicit value are interpreted as false
         // check https://microsoft.github.io/debug-adapter-protocol/specification#capabilities for all possible capabilities
         
-        // ...
-        response.body.supportsConfigurationDoneRequest = false;
+        // we support configurationDoneRequest, as we use it to await the breakpoints before launching
+        response.body.supportsConfigurationDoneRequest = true;
 
         // we support restart requests for the program
         response.body.supportsRestartRequest = true;
@@ -76,17 +80,31 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
+    // associated with the capability "supportsConfigurationDOneRequest"
+    // called by VSCode after initial configurations (e. g. breakpoints) have been set
+    protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
+		super.configurationDoneRequest(response, args);
+
+		// notify the launchRequest that configuration has finished
+		this.configurationDone.notify();
+	}
+
+    // override of the default implementation of the function
     // function for starting the debuggee
     // our needed arguments are part of our extension for the LaunchRequestArguments
     // sets up our AsmDebugger
     // response is empty / just an acknowledgement
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
         // passing the configuration into our asmDebugger to make it actually usable
         this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
         this.breakpointsOnBRKStatements = args.setBreakpointsAtBRK;
 
         // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
         this.sendEvent(new InitializedEvent());
+
+        // wait until configuration has finished (and configurationDoneRequest has been called)
+        // timeout given in millliseconds
+        await this.configurationDone.wait(10000);
 
         // launching/starting
         let stopOnEntry = true;
@@ -135,6 +153,11 @@ export class AsmDebugSession extends DebugSession {
             breakpoints: actualBreakpoints
         };
         this.sendResponse(response);
+
+        // after sending the expected breakpoints, we signal the creation of additional breakpoints for or brk statements
+        this.debugger.getBreakpoints.filter(bp => bp.brk).forEach(bp => {
+            this.sendEvent(new BreakpointEvent('new', <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source}));
+        });
     }
     
     // override of the default implementation of the function
