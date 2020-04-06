@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -14,12 +15,16 @@ export class AsmDebugSession extends DebugSession {
 
     private debugger: AsmDebugger;
 
+    private breakpointsOnBRKStatements: boolean;
+
     public constructor() {
         super();
 
         // debugger uses zero-based lines and columns
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
+
+        this.breakpointsOnBRKStatements = true;
 
         // creating the debugger object in the constructor to set up event listeners 
         this.debugger = new AsmDebugger();
@@ -78,6 +83,7 @@ export class AsmDebugSession extends DebugSession {
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
         // passing the configuration into our asmDebugger to make it actually usable
         this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
+        this.breakpointsOnBRKStatements = args.setBreakpointsAtBRK;
 
         // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
         this.sendEvent(new InitializedEvent());
@@ -110,6 +116,11 @@ export class AsmDebugSession extends DebugSession {
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): void {
         // before setting the new set of breakpoints, we remove the old ones
         this.debugger.clearAllBreakpoints();
+
+        if(this.breakpointsOnBRKStatements) {
+            this.debugger.setBreakpointsAtBRK();
+        }
+
         // get wanted breakpoints
         let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
         // set a breakpoint for every requested one
@@ -118,7 +129,8 @@ export class AsmDebugSession extends DebugSession {
         });
         
         // mapping our asmBreakpoints into the DAP breakpoints
-        let actualBreakpoints = this.debugger.getBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
+        // for the time being, we filter out our brk statement breakpoints, because vscode expects as much breakpoints as it set and throws additional breakpoints away
+        let actualBreakpoints = this.debugger.getBreakpoints.filter(bp => !bp.brk).map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
 
         response.body = {
             breakpoints: actualBreakpoints

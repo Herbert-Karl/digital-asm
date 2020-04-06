@@ -66,10 +66,6 @@ export class AsmDebugger extends EventEmitter {
     // start up the program
     // depending on the given boolean, the program either starts running or waits at the first code line 
     public start(stopOnEntry: boolean) {
-        // before starting, we check if BRK statements should be breakpoints and set them
-        if(this.brkBreakpoints) {
-            this.setBreakpointsAtBRK();
-        }
         this.remoteInterface.debug(this.pathToHexFile)
             .then((addr)=> {
                 this.currentCodeLine = this.getFirstCodeLine();
@@ -196,7 +192,7 @@ export class AsmDebugger extends EventEmitter {
     }
 
     // internal function for checking the source code for BRK statements and setting breakpoints for them
-    private setBreakpointsAtBRK() {
+    public setBreakpointsAtBRK() {
         // load all lines of the source file
         let sourceCodeLines = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n');
         // check every line for 'BRK' and if there is a ';' before it
@@ -204,8 +200,8 @@ export class AsmDebugger extends EventEmitter {
             let brk = line.indexOf("BRK");
             let semicolon = line.indexOf(";");
             if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
-                // create a breakpoint for this line
-                this.setBreakpoint(index, true);
+                // create a breakpoint for this line; adjusting 0 based index to 1 based code lines
+                this.setBreakpoint(index+1, true);
             }
         });    
     }
@@ -268,6 +264,11 @@ export class AsmDebugger extends EventEmitter {
     // getter function for the breakpoints variable
     public get getBreakpoints() {
         return this.breakpoints;
+    }
+
+    // getter function for the underlying .asm file
+    public get getPathToAsmFile() {
+        return this.pathToAsmFile;
     }
 
     // helper function
