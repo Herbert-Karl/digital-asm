@@ -104,8 +104,7 @@ export class AsmDebugSession extends DebugSession {
     // associated with the capability "supportsRestartRequest"
     // response is empty / just an acknowledgement that the request has been done
     protected restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request): void {
-        // we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger.restart(true);
+        this.debugger.start(true);
         this.sendResponse(response);
 	}
 
