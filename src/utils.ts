@@ -5,6 +5,7 @@ export interface AsmBreakpoint {
     codeline: number;
     id: number;
     brk: boolean;
+    verified: boolean;
 }
 
 // interface containing all information needed for launching our debugger

@@ -188,7 +188,8 @@ export class AsmDebugger extends EventEmitter {
     // returns:
     // the new breakpoint
     public setBreakpoint(codeline: number, brk: boolean = false): AsmBreakpoint {
-        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++, brk};
+        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++, brk, verified: false};
+        this.verifyBreakpoint(newBreakpoint);
         this.breakpoints.push(newBreakpoint);
         if(!brk) { this.numberNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
         return newBreakpoint;
@@ -284,6 +285,18 @@ export class AsmDebugger extends EventEmitter {
     // the code line number for the first address in the hex file; defaults to 1, if for some reason, there is no codeline for address 0
     private getFirstCodeLine(): number {
         return this.mapAddrToCodeLine.get(0) || 1;
+    }
+
+    // helper function
+    // checks if a breakpoint is on a code line, which actualy is part of the hex file
+    // sets the verified attribute accordingly
+    private verifyBreakpoint(bp: AsmBreakpoint) {
+        this.mapAddrToCodeLine.forEach((value, key) => {
+            if(bp.codeline===value) {
+                bp.verified = true;
+                return;
+            }
+        });
     }
 
 }
