@@ -96,8 +96,12 @@ export class AsmDebugSession extends DebugSession {
     // response is empty / just an acknowledgement
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
         // passing the configuration into our asmDebugger to make it actually usable
-        this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.setBreakpointsAtBRK, args.IPofSimulator, args.PortOfSimulator);
+        this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.IPofSimulator, args.PortOfSimulator);
         this.breakpointsOnBRKStatements = args.setBreakpointsAtBRK;
+
+        if(this.breakpointsOnBRKStatements) {
+            this.setBreakpointsAtBRK();
+        }
 
         // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
         this.sendEvent(new InitializedEvent());
@@ -134,32 +138,23 @@ export class AsmDebugSession extends DebugSession {
         // before setting the new set of breakpoints, we remove the old ones
         this.debugger.clearAllBreakpoints();
 
-        if(this.breakpointsOnBRKStatements) {
-            this.debugger.setBreakpointsAtBRK();
-        }
-
         // get wanted breakpoints
         let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
         // set a breakpoint for every requested one
         breakpoints.forEach(elem => {
-            let bp = this.debugger.setBreakpoint(elem.line);      
+            this.debugger.setBreakpoint(elem.line);      
         });
         
         // mapping our asmBreakpoints into the DAP breakpoints
         // for the time being, we filter out our brk statement breakpoints, because vscode expects as much breakpoints as it set and throws additional breakpoints away
-        let actualBreakpoints = this.debugger.getBreakpoints.filter(bp => !bp.brk).map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
+        let actualBreakpoints = this.debugger.getBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
 
         response.body = {
             breakpoints: actualBreakpoints
         };
         this.sendResponse(response);
-
-        // after sending the expected breakpoints, we signal the creation of additional breakpoints for or brk statements
-        this.debugger.getBreakpoints.filter(bp => bp.brk).forEach(bp => {
-            this.sendEvent(new BreakpointEvent('new', <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source}));
-        });
     }
-    
+
     // override of the default implementation of the function
     // (re)start running the program
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request) : void {
@@ -278,6 +273,28 @@ export class AsmDebugSession extends DebugSession {
     // Source object corresponding to the given filePath
     private createSource(filePath: string): Source {
         return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath), undefined);
+    }
+
+    // internal function for checking the source code for BRK statements and setting breakpoints for them
+    public setBreakpointsAtBRK() {
+        // load all lines of the source file
+        let sourceCodeLines = fs.readFileSync(this.debugger.getPathToAsmFile, 'utf8').split('\n');
+        // check every line for 'BRK' and if there is a ';' before it
+        sourceCodeLines.forEach((line, index) => {
+            let brk = line.indexOf("BRK");
+            let semicolon = line.indexOf(";");
+            if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
+                // create a breakpoint for this line; adjusting 0 based index to 1 based code lines
+                let newBreakpoint = this.debugger.setBreakpoint(index+1, true);
+                // signaling the editor about the additional breakpoint created
+                this.sendEvent(
+                    new BreakpointEvent(
+                        'new', 
+                        <Breakpoint>{id: newBreakpoint.id, line: newBreakpoint.codeline, verified: newBreakpoint.verified, source: this.createSource(this.debugger.getPathToAsmFile)}
+                    )
+                );
+            }
+        });    
     }
 
 }
