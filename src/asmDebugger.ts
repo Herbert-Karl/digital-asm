@@ -10,9 +10,6 @@ export class AsmDebugger extends EventEmitter {
     private pathToAsmFile: string = "";
     private pathToHexFile: string = "";
 
-    // defines if the BRK Mnemonic shall be used as Breakpoint for debugging
-    private brkBreakpoints: boolean = true;
-
     // mapping of the addresses used/returned by the digital simulator to the corresponding code lines in the asm file
     private mapAddrToCodeLine: Map<number, number>;
 
@@ -48,10 +45,9 @@ export class AsmDebugger extends EventEmitter {
     // expects:
     // the hexFile is the parsed version of the asmFile
     // the mappingFile contains a json array of hex addresses to asm codelines
-    public config(asm: string, hex: string, map: string, setBreakpointsAtBRK: boolean, IPofSimulator: string, PortOfSimulator: number) {
+    public config(asm: string, hex: string, map: string, IPofSimulator: string, PortOfSimulator: number) {
         this.pathToAsmFile = asm;
         this.pathToHexFile = hex;
-        this.brkBreakpoints = setBreakpointsAtBRK;
 
         // loading the mapping of hex addresses to asm codelines
         let rawdata = fs.readFileSync(map);
@@ -170,24 +166,10 @@ export class AsmDebugger extends EventEmitter {
     public setBreakpoint(codeline: number, brk: boolean = false): AsmBreakpoint {
         let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++, brk, verified: false};
         this.verifyBreakpoint(newBreakpoint);
+        this.checkBreakpointForBRK(newBreakpoint);
         this.breakpoints.push(newBreakpoint);
         if(!brk) { this.numberNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
         return newBreakpoint;
-    }
-
-    // internal function for checking the source code for BRK statements and setting breakpoints for them
-    public setBreakpointsAtBRK() {
-        // load all lines of the source file
-        let sourceCodeLines = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n');
-        // check every line for 'BRK' and if there is a ';' before it
-        sourceCodeLines.forEach((line, index) => {
-            let brk = line.indexOf("BRK");
-            let semicolon = line.indexOf(";");
-            if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
-                // create a breakpoint for this line; adjusting 0 based index to 1 based code lines
-                this.setBreakpoint(index+1, true);
-            }
-        });    
     }
 
     // function for removing a single breakpoint
@@ -280,6 +262,22 @@ export class AsmDebugger extends EventEmitter {
             if(bp.codeline===value) {
                 bp.verified = true;
                 return;
+            }
+        });
+    }
+
+    // helper function
+    // checks if a breakpoint is on a code line with a brk statement
+    // sets the brk attribute accordingly
+    private checkBreakpointForBRK(bp: AsmBreakpoint) {
+        // load all lines of the source file
+        const sourceCodeLines = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n');
+        // check every line for 'BRK' and if there is a ';' before it
+        sourceCodeLines.forEach((line, index) => {
+            let brk = line.indexOf("BRK");
+            let semicolon = line.indexOf(";");
+            if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
+                bp.brk = true;
             }
         });
     }
