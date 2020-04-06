@@ -15,7 +15,8 @@
     },
     "license": "GPL-3.0-or-later",
     "categories": [
-        "Programming Languages", "Debuggers"
+        "Programming Languages",
+        "Debuggers"
     ],
     "keywords": [
         "assembler, digital"
@@ -155,6 +156,7 @@
         "vscode-test": "^1.3.0"
     },
     "dependencies": {
+        "await-notify": "^1.0.1",
         "vscode-debugadapter": "^1.39.0"
     }
 }
