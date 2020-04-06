@@ -205,7 +205,25 @@ export class AsmDebugSession extends DebugSession {
         };
         
         this.sendResponse(response);
+    }
+
+    /*
+    // override of the default implementation of the function
+    protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
+        response.body = {
+            scopes: []
+        };
+        this.sendResponse(response);
+    }
+    
+    // override of the default implementation of the function
+    protected  variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request) {
+        response.body = {
+            variables: []
+        };
+        this.sendResponse(response);
 	}
+    */
 
     /*
         requests for Evaluate, Source, Scopes and Variables aren't implemented (empty base implementation used)
