@@ -72,6 +72,7 @@ export class AsmDebugger extends EventEmitter {
         }
         this.remoteInterface.debug(this.pathToHexFile)
             .then((addr)=> {
+                this.currentCodeLine = this.getFirstCodeLine();
                 if(stopOnEntry) {
                     this.sendEvent('stopOnEntry');
                 } else {
@@ -109,6 +110,7 @@ export class AsmDebugger extends EventEmitter {
     public restart(stopOnEntry: boolean) {
         this.remoteInterface.debug(this.pathToHexFile)
             .then((addr)=> {
+                this.currentCodeLine = this.getFirstCodeLine();
                 if(stopOnEntry) {
                     this.sendEvent('stopOnEntry');
                 } else {
@@ -276,5 +278,12 @@ export class AsmDebugger extends EventEmitter {
         return codeLine.indexOf(codeLine.trimLeft());
     }
 
+    // helper function
+    // uses the mapping between codelines and hex address
+    // returns:
+    // the code line number for the first address in the hex file; defaults to 1, if for some reason, there is no codeline for address 0
+    private getFirstCodeLine(): number {
+        return this.mapAddrToCodeLine.get(0) || 1;
+    }
 
 }
