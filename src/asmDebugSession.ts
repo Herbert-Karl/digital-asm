@@ -110,18 +110,21 @@ export class AsmDebugSession extends DebugSession {
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): void {
         // before setting the new set of breakpoints, we remove the old ones
         this.debugger.clearAllBreakpoints();
-            // get wanted breakpoints
-            let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
-            // set a breakpoint for every requested one
+        // get wanted breakpoints
+        let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
+        // set a breakpoint for every requested one
         breakpoints.forEach(elem => {
             let bp = this.debugger.setBreakpoint(elem.line);      
-            });
-            
-            // mapping our asmBreakpoints into the DAP breakpoints and setting them into the response
-        response.body.breakpoints = this.debugger.getBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: true, source: args.source});
+        });
+        
+        // mapping our asmBreakpoints into the DAP breakpoints
+        let actualBreakpoints = this.debugger.getBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
 
-            this.sendResponse(response);
-        }
+        response.body = {
+            breakpoints: actualBreakpoints
+        };
+        this.sendResponse(response);
+    }
     
     // override of the default implementation of the function
     // (re)start running the program
@@ -207,8 +210,9 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    /*
     // override of the default implementation of the function
+    // 
+    // empty function implementation as we do not support scopes
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
         response.body = {
             scopes: []
@@ -217,16 +221,17 @@ export class AsmDebugSession extends DebugSession {
     }
     
     // override of the default implementation of the function
+    // 
+    // empty function implementation as we do not support variables
     protected  variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request) {
         response.body = {
             variables: []
         };
         this.sendResponse(response);
 	}
-    */
 
     /*
-        requests for Evaluate, Source, Scopes and Variables aren't implemented (empty base implementation used)
+        requests for Evaluate and Source aren't implemented (empty base implementation used)
         because we do not support these things
         but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
