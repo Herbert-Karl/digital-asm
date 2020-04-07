@@ -1,4 +1,10 @@
-export const mnemonicsArray: Array<{label: string, detail: string, doc: string}> = [
+export interface AsmMnemonic {
+    label: string;
+    detail: string;
+    doc: string;
+}
+
+export const mnemonicsArray: Array<AsmMnemonic> = [
     {label: "BRK", detail: "BRK", doc: "Stops execution by stopping the simulator."},
     {label: "NOP", detail: "NOP", doc: "Does nothing."},
     {label: "MOV", detail: "MOV Rd,Rs", doc: "Move the content of Rs to register Rd."},

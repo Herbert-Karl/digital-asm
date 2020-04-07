@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { RemoteInterface } from './remoteInterface';
-import { mnemonicsArray } from './mnemonics';
+import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
 // plugin settings
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
@@ -149,7 +149,7 @@ class AsmCompletionItemProvider implements vscode.CompletionItemProvider {
         let completionItems = new Array<vscode.CompletionItem>();
 
         // putting all of our mnemonics into the array of completion items
-        mnemonicsArray.forEach((elem: {label: string, detail: string, doc: string}) => {
+        mnemonicsArray.forEach((elem: AsmMnemonic) => {
             completionItems.push(createCompletionItem(elem.label, elem.detail, elem.doc, vscode.CompletionItemKind.Keyword));
         });
 
@@ -175,7 +175,7 @@ class AsmHoverProvider implements vscode.HoverProvider {
     constructor() {
         this.hoverMap = new Map<string, vscode.Hover>();
         // creating hovers for each mnemonic and putting all of them into the map with the mnemonic as key for easy retrieval
-        mnemonicsArray.forEach((elem: {label: string, detail: string, doc: string}) => {
+        mnemonicsArray.forEach((elem: AsmMnemonic) => {
             let newHover = new vscode.Hover(elem.detail+"\n\n"+elem.doc);
             this.hoverMap.set(elem.label, newHover);
         });
