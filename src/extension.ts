@@ -142,111 +142,111 @@ class AsmCompletionItemProvider implements vscode.CompletionItemProvider {
 
         // --- instructions ---
         //
-        completionItems.push(createCompletionItem("BRK", "BRK", "Stops execution by stopping the simulator.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("NOP", "NOP", "Does nothing.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("MOV", "MOV Rd,Rs", "Move the content of Rs to register Rd.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("BRK", "BRK", "Stops execution by stopping the simulator.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("NOP", "NOP", "Does nothing.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("MOV", "MOV Rd,Rs", "Move the content of Rs to register Rd.", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("ADD", "ADD Rd,Rs", "Adds the content of register Rs to register Rd without carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ADC", "ADC Rd,Rs", "Adds the content of register Rs to register Rd with carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ADDI", "ADDI Rd,[const]", "Adds the constant [const] to register Rd without carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ADDIs", "ADDIs Rd,[const]", "Adds the constant [const] to register Rd without carry. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ADCI", "ADCI Rd,[const]", "Adds the constant [const] to register Rd with carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ADCIs", "ADCIs Rd,[const]", "Adds the constant [const] to register Rd with carry. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("ADD", "ADD Rd,Rs", "Adds the content of register Rs to register Rd without carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ADC", "ADC Rd,Rs", "Adds the content of register Rs to register Rd with carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ADDI", "ADDI Rd,[const]", "Adds the constant [const] to register Rd without carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ADDIs", "ADDIs Rd,[const]", "Adds the constant [const] to register Rd without carry. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ADCI", "ADCI Rd,[const]", "Adds the constant [const] to register Rd with carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ADCIs", "ADCIs Rd,[const]", "Adds the constant [const] to register Rd with carry. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("SUB", "SUB Rd,Rs", "Subtracts the content of register Rs to register Rd without carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SBC", "SBC Rd,Rs", "Subtracts the content of register Rs to register Rd with carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SUBI", "SUBI Rd,[const]", "Substracts a constant [const] to register Rd without carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SUBIs", "SUBIs Rd,[const]", "Substracts a constant [const] to register Rd without carry. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SBCI", "SBCI Rd,[const]", "Substracts a constant [const] to register Rd with carry.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SBCIs", "SBCIs Rd,[const]", "Substracts a constant [const] to register Rd with carry. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("SUB", "SUB Rd,Rs", "Subtracts the content of register Rs to register Rd without carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SBC", "SBC Rd,Rs", "Subtracts the content of register Rs to register Rd with carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SUBI", "SUBI Rd,[const]", "Substracts a constant [const] to register Rd without carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SUBIs", "SUBIs Rd,[const]", "Substracts a constant [const] to register Rd without carry. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SBCI", "SBCI Rd,[const]", "Substracts a constant [const] to register Rd with carry.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SBCIs", "SBCIs Rd,[const]", "Substracts a constant [const] to register Rd with carry. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("MUL", "MUL Rd,Rs", "Multiplies the content of register Rs with register Rd and stores result in Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("MULI", "MULI Rd,[const]", "Multiplies the constant [const] with register Rd and stores result in Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("MULIs", "MULIs Rd,[const]", "Multiplies the constant [const] with register Rd and stores result in Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("MUL", "MUL Rd,Rs", "Multiplies the content of register Rs with register Rd and stores result in Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("MULI", "MULI Rd,[const]", "Multiplies the constant [const] with register Rd and stores result in Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("MULIs", "MULIs Rd,[const]", "Multiplies the constant [const] with register Rd and stores result in Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("AND", "AND Rd,Rs", "Stores Rs and Rd in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ANDI", "ANDI Rd,[const]", "Stores Rd and [const] in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ANDIs", "ANDIs Rd,[const]", "Stores Rd and [const] in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("OR", "OR Rd,Rs", "Stores Rs or Rd in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ORI", "ORI Rd,[const]", "Stores Rd or [const] in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ORIs", "ORIs Rd,[const]", "Stores Rd or [const] in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("EOR", "EOR Rd,Rs", "Stores Rs xor Rd in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("EORI", "EORI Rd,[const]", "Stores Rd xor [const] in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("EORIs", "EORIs Rd,[const]", "Stores Rd xor [const] in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("AND", "AND Rd,Rs", "Stores Rs and Rd in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ANDI", "ANDI Rd,[const]", "Stores Rd and [const] in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ANDIs", "ANDIs Rd,[const]", "Stores Rd and [const] in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("OR", "OR Rd,Rs", "Stores Rs or Rd in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ORI", "ORI Rd,[const]", "Stores Rd or [const] in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ORIs", "ORIs Rd,[const]", "Stores Rd or [const] in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("EOR", "EOR Rd,Rs", "Stores Rs xor Rd in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("EORI", "EORI Rd,[const]", "Stores Rd xor [const] in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("EORIs", "EORIs Rd,[const]", "Stores Rd xor [const] in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("CMP", "CMP Rd,Rs", "Subtracts the content of register Rs from register Rd without carry, does not store the value.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("CPI", "CPI Rd,[const]", "Subtracts a constant [const] from register Rd without carry, does not store the value.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("CPIs", "CPIs Rd,[const]", "Subtracts a constant [const] from register Rd without carry, does not store the value. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("CMP", "CMP Rd,Rs", "Subtracts the content of register Rs from register Rd without carry, does not store the value.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("CPI", "CPI Rd,[const]", "Subtracts a constant [const] from register Rd without carry, does not store the value.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("CPIs", "CPIs Rd,[const]", "Subtracts a constant [const] from register Rd without carry, does not store the value. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("LSL", "LSL Rd", "Shifts register Rd by one bit to the left. A zero bit is filled in and the highest bit is moved to the carry bit.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LSR", "LSR Rd", "Shifts register Rd by one bit to the right. A zero bit is filled in and the lowest bit is moved to the carry bit.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ROL", "ROL Rd", "Shifts register Rd by one bit to the left. The carry bit is filled in and the highest bit is moved to the carry bit.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ROR", "ROR Rd", "Shifts register Rd by one bit to the right. The carry bit is filled in and the lowest bit is moved to the carry bit.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ASR", "ASR Rd", "Shifts register Rd by one bit to the right. The MSB remains unchanged and the lowest bit is moved to the carry bit.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SWAP", "SWAP Rd", "Swaps the high and low byte in register Rd", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("SWAPN", "SWAPN Rd", "Swaps the high and low nibbles of both bytes in register Rd.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("LSL", "LSL Rd", "Shifts register Rd by one bit to the left. A zero bit is filled in and the highest bit is moved to the carry bit.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LSR", "LSR Rd", "Shifts register Rd by one bit to the right. A zero bit is filled in and the lowest bit is moved to the carry bit.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ROL", "ROL Rd", "Shifts register Rd by one bit to the left. The carry bit is filled in and the highest bit is moved to the carry bit.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ROR", "ROR Rd", "Shifts register Rd by one bit to the right. The carry bit is filled in and the lowest bit is moved to the carry bit.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ASR", "ASR Rd", "Shifts register Rd by one bit to the right. The MSB remains unchanged and the lowest bit is moved to the carry bit.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SWAP", "SWAP Rd", "Swaps the high and low byte in register Rd", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("SWAPN", "SWAPN Rd", "Swaps the high and low nibbles of both bytes in register Rd.", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("LDI", "LDI Rd,[const]", "Loads Register Rd with the constant value [const].", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LDIs", "LDI Rd,[const]", "Loads Register Rd with the constant value [const]. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LD", "LD Rd,[Rs]", "Loads the value at memory address [Rs] to register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LDS", "LDS Rd,[const]", "Loads the memory value at the location given by [const] to register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LDSs", "LDSs Rd,[const]", "Loads the memory value at the location given by [const] to register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LDD", "LDD Rd,[Rs+[const]]", "Loads the value at memory address (Rs+[const]) to register Rd.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("LDI", "LDI Rd,[const]", "Loads Register Rd with the constant value [const].", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LDIs", "LDI Rd,[const]", "Loads Register Rd with the constant value [const]. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LD", "LD Rd,[Rs]", "Loads the value at memory address [Rs] to register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LDS", "LDS Rd,[const]", "Loads the memory value at the location given by [const] to register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LDSs", "LDSs Rd,[const]", "Loads the memory value at the location given by [const] to register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LDD", "LDD Rd,[Rs+[const]]", "Loads the value at memory address (Rs+[const]) to register Rd.", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("ST", "ST [Rd],Rs", "Stores the content of register Rs to the memory at the address [Rd].", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("STS", "STS [const],Rs", "Stores the content of register Rs to memory at the location given by [const].", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("STSs", "STSs [const],Rs", "Stores the content of register Rs to memory at the location given by [const]. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("STD", "STD [Rd+[const]],Rs", "Stores the content of register Rs to the memory at the address (Rd+[const]).", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("ST", "ST [Rd],Rs", "Stores the content of register Rs to the memory at the address [Rd].", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("STS", "STS [const],Rs", "Stores the content of register Rs to memory at the location given by [const].", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("STSs", "STSs [const],Rs", "Stores the content of register Rs to memory at the location given by [const]. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("STD", "STD [Rd+[const]],Rs", "Stores the content of register Rs to the memory at the address (Rd+[const]).", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("BRCS", "BRCS [const]", "Jumps to the address given by [const] if carry flag is set. (-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("BREQ", "BREQ [const]", "Jumps to the address given by [const] if zero flag is set. (-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("BRMI", "BRMI [const]", "Jumps to the address given by [const] if negative flag is set. (-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("BRCC", "BRCC [const]", "Jumps to the address given by [const] if carry flag is clear. (-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("BRNE", "BRNE [const]", "Jumps to the address given by [const] if zero flag is clear. (-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("BRPL", "BRPL [const]", "Jumps to the address given by [const] if negative flag is clear. (-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("BRCS", "BRCS [const]", "Jumps to the address given by [const] if carry flag is set. (-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("BREQ", "BREQ [const]", "Jumps to the address given by [const] if zero flag is set. (-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("BRMI", "BRMI [const]", "Jumps to the address given by [const] if negative flag is set. (-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("BRCC", "BRCC [const]", "Jumps to the address given by [const] if carry flag is clear. (-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("BRNE", "BRNE [const]", "Jumps to the address given by [const] if zero flag is clear. (-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("BRPL", "BRPL [const]", "Jumps to the address given by [const] if negative flag is clear. (-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("RCALL", "RCALL Rd,[const]", "Jumps to the address given by const, the returnaddress is stored in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("RRET", "RRET Rs", "Jumps to the address given by register Rs.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("JMP", "JMP [const]", "Jumps to the address given by [const].", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("JMPs", "JMPs [const]", "Jumps to the address given by [const].(-256<=[const]<=255)", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("RCALL", "RCALL Rd,[const]", "Jumps to the address given by const, the returnaddress is stored in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("RRET", "RRET Rs", "Jumps to the address given by register Rs.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("JMP", "JMP [const]", "Jumps to the address given by [const].", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("JMPs", "JMPs [const]", "Jumps to the address given by [const].(-256<=[const]<=255)", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("OUT", "OUT [const],Rs", "Writes the content of register Rs to io location given by [const].", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("OUTs", "OUTs [const],Rs", "Writes the content of register Rs to io location given by [const]. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("OUTR", "OUTR [Rd],Rs", "Writes the content of register Rs to the io location [Rd].", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("IN", "IN Rd,[const]", "Reads the io location given by [const] and stores it in register Rd.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("INs", "INs Rd,[const]", "Reads the io location given by [const] and stores it in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("INR", "INR Rd,[Rs]", "Reads the io location given by (Rs) and stores it in register Rd.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("OUT", "OUT [const],Rs", "Writes the content of register Rs to io location given by [const].", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("OUTs", "OUTs [const],Rs", "Writes the content of register Rs to io location given by [const]. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("OUTR", "OUTR [Rd],Rs", "Writes the content of register Rs to the io location [Rd].", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("IN", "IN Rd,[const]", "Reads the io location given by [const] and stores it in register Rd.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("INs", "INs Rd,[const]", "Reads the io location given by [const] and stores it in register Rd. (0<=[const]<=31)", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("INR", "INR Rd,[Rs]", "Reads the io location given by (Rs) and stores it in register Rd.", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("RETI", "RETI", "Return from Interrupt.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("RETI", "RETI", "Return from Interrupt.", vscode.CompletionItemKind.Keyword));
         //
         // --- macros ---
         //
-        completionItems.push(createCompletionItem("PUSH",  "PUSH Rs", "copies the value in the given register to the stack, decreases the stack pointer by one", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("POP", "POP Rd", "copy value from the stack to the given register, adds one to the stack pointer", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("PUSH",  "PUSH Rs", "copies the value in the given register to the stack, decreases the stack pointer by one", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("POP", "POP Rd", "copy value from the stack to the given register, adds one to the stack pointer", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("CALL", "CALL [const]", "Jumps to the given Address, stores the return address on the stack.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("RET", "RET [const]", "jumps to the address which is stored on top of the stack. decreases the stack pointer by 1+const. const is optional", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("CALL", "CALL [const]", "Jumps to the given Address, stores the return address on the stack.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("RET", "RET [const]", "jumps to the address which is stored on top of the stack. decreases the stack pointer by 1+const. const is optional", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("LEAVE", "LEAVE", "moves BP to SP and pops BP from the stack", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("LEAVEI", "LEAVEI", "pops R0 and the flags from the stack", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ENTER", "ENTER [const]", "pushes BP on stack, copies SP to BP and reduces SP by the given constant", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("ENTERI", "ENTERI", "pushes R0 and the flags to the stack", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("_SCALL", "_SCALL [const]", "jumps to the address given in const and stores the return address in the register RA. Before that RA is pushed to the stack, and after the return RA is poped of the stack again.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("LEAVE", "LEAVE", "moves BP to SP and pops BP from the stack", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("LEAVEI", "LEAVEI", "pops R0 and the flags from the stack", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ENTER", "ENTER [const]", "pushes BP on stack, copies SP to BP and reduces SP by the given constant", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("ENTERI", "ENTERI", "pushes R0 and the flags to the stack", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("_SCALL", "_SCALL [const]", "jumps to the address given in const and stores the return address in the register RA. Before that RA is pushed to the stack, and after the return RA is poped of the stack again.", vscode.CompletionItemKind.Keyword));
         //
-        completionItems.push(createCompletionItem("DEC", "DEC Rd", "decreases the given register by one", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem("INC", "INC Rd", "increases the given register by one", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem("DEC", "DEC Rd", "decreases the given register by one", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem("INC", "INC Rd", "increases the given register by one", vscode.CompletionItemKind.Keyword));
         
         //
         // --- directives ---
         //
-        completionItems.push(createCompletionItem(".reg", ".reg alias Rs", "Sets an alias name for a register.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".long", ".long addr", "Reserves two words in the RAM. Its address is stored in addr.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".org", ".org addr", "Sets the actual code address. Is used to place code segments to fixed addresses.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".const", ".const ident const", "Creates the given constant.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".include", ".include \"filename\"", "Includes the given file", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".word", ".word addr", "Reserves a single word in the RAM. Its address is stored in addr.", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".dorg", ".dorg addr", "Sets the actual data address. If used, assembler is switched to von Neumann mode", vscode.CompletionItemKind.Operator));
-        completionItems.push(createCompletionItem(".data", ".data addr value(,value)*", "Copies the given values to the RAM. The address of the values is stored in addr.", vscode.CompletionItemKind.Operator));
+        completionItems.push(createCompletionItem(".reg", ".reg alias Rs", "Sets an alias name for a register.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".long", ".long addr", "Reserves two words in the RAM. Its address is stored in addr.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".org", ".org addr", "Sets the actual code address. Is used to place code segments to fixed addresses.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".const", ".const ident const", "Creates the given constant.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".include", ".include \"filename\"", "Includes the given file", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".word", ".word addr", "Reserves a single word in the RAM. Its address is stored in addr.", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".dorg", ".dorg addr", "Sets the actual data address. If used, assembler is switched to von Neumann mode", vscode.CompletionItemKind.Keyword));
+        completionItems.push(createCompletionItem(".data", ".data addr value(,value)*", "Copies the given values to the RAM. The address of the values is stored in addr.", vscode.CompletionItemKind.Keyword));
         
         return completionItems;
     }
