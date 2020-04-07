@@ -29,9 +29,16 @@ export function activate(context: vscode.ExtensionContext) {
     // registering our provider for completions
     let completionProvider = vscode.languages.registerCompletionItemProvider('asm', new AsmCompletionItemProvider());
 
+    // registering our provider for hovers
+    let hoverProvider = vscode.languages.registerHoverProvider('asm', new AsmHoverProvider());
+
     // adding the implementation of the commands to the context of the extension, 
     //so that the implementations will be executed, when the commands are called
-    context.subscriptions.push(parseAsm, runAsm, completionProvider);
+    context.subscriptions.push(parseAsm, runAsm);
+
+    // adding our providers to the context of the extension
+    context.subscriptions.push(completionProvider, hoverProvider);
+
 }
 
 // this method is called when your extension is deactivated
@@ -158,4 +165,27 @@ function createCompletionItem(label: string, detail: string, doc: string, kind: 
     newCompletionItem.detail = detail;
     newCompletionItem.documentation = doc;
     return newCompletionItem;
+}
+
+// class implementing hovers for our asm mnemonics
+class AsmHoverProvider implements vscode.HoverProvider {
+
+    private hoverMap: Map<string, vscode.Hover>;
+
+    constructor() {
+        this.hoverMap = new Map<string, vscode.Hover>();
+        // creating hovers for each mnemonic and putting all of them into the map with the mnemonic as key for easy retrieval
+        mnemonicsArray.forEach((elem: {label: string, detail: string, doc: string}) => {
+            let newHover = new vscode.Hover(elem.detail+"\n\n"+elem.doc);
+            this.hoverMap.set(elem.label, newHover);
+        });
+    }
+
+    public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
+        let range = document.getWordRangeAtPosition(position);
+        let word = document.getText(range);
+
+        return this.hoverMap.get(word);
+    }
+
 }
