@@ -2,7 +2,7 @@
     "name": "digital-asm",
     "displayName": "Digital Assembler",
     "description": "Plugin offering code completion, compiling, executing and single step debugging for asm files used with Digital",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "publisher": "Herbert-Karl",
     "author": {
         "name": "Herbert Bärschneider"
@@ -92,7 +92,6 @@
         "@types/mocha": "^5.2.6",
         "@types/node": "^12.12.30",
         "@types/vscode": "^1.43.0",
-        "electron-rebuild": "^1.10.1",
         "glob": "^7.1.4",
         "mocha": "^6.1.4",
         "tslint": "^5.20.0",

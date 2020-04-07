@@ -11,6 +11,8 @@ It is created as part of a study work at the DHBW Mosbach.
 * Commands
   * Parsing `.asm` into `.hex` and `.lst`
   * Running file in the digital simulator
+* code completion for asm mnemonics
+* hover texts for asm mnemonics
 
 ## Requirements
 

@@ -2,15 +2,12 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
-## 0.4.0 - tbd
-
-* added code completion for the asm mnemonics
-* added hover texts for the asm mnemonics
-
 ## 0.3.0 - tbd
 
 * added command for running the .asm file in the digital simulator
-* changed parsing command to now also generate a .lst file 
+* changed parsing command to now also generate a .lst file
+* added code completion for the asm mnemonics
+* added hover texts for the asm mnemonics 
 
 ## 0.2.1 - 24.03.2020
 
