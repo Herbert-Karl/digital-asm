@@ -10,6 +10,7 @@ export interface AsmBreakpoint {
 
 // interface containing all information needed for launching our debugger
 export interface AsmLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
+    stopOnEntry: boolean;
     pathToAsmFile: string;
     pathToHexFile: string;
     pathToAsmHexMapping: string;

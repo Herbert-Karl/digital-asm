@@ -111,13 +111,7 @@ export class AsmDebugSession extends DebugSession {
         await this.configurationDone.wait(10000);
 
         // launching/starting
-        let stopOnEntry = true;
-        if(args.noDebug!==undefined) {
-            // if the launchrequestarguments contain an information about the debugging we use it
-            // but we negate noDebug in order to match the semantic of stopOnEntry (noDebug true would mean that we shouldn't stopOnEntry/shoudl just run the program)
-            stopOnEntry = !args.noDebug;
-        }
-        this.debugger.start(stopOnEntry);
+        this.debugger.start(args.stopOnEntry);
 
         this.sendResponse(response);
     }

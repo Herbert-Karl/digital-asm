@@ -103,12 +103,17 @@
                 "configurationAttributes": {
                     "launch": {
                         "required": [
-                            "file"
+                            "file",
+                            "stopOnEntry"
                         ],
                         "properties": {
                             "file": {
                                 "type": "string",
                                 "description": "the file to debug"
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "if the debugger should halt at the first file line"
                             }
                         }
                     }
@@ -118,18 +123,20 @@
                         "type": "digital-conn",
                         "request": "launch",
                         "name": "Ask for file name",
-                        "file": "${workspaceFolder}/${command:AskForFileName}"
+                        "file": "${workspaceFolder}/${command:AskForFileName}",
+                        "stopOnEntry": "true"
                     }
                 ],
                 "configurationSnippets": [
                     {
                         "label": "Asm Debug",
-                        "description": "configuration for running an asm file",
+                        "description": "configuration for debugging an asm file",
                         "body": {
                             "type": "digital-conn",
                             "request": "launch",
                             "name": "Debugging",
-                            "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
+                            "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
+                            "stopOnEntry": "true"
                         }
                     }
                 ],

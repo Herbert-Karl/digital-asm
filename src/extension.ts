@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import { RemoteInterface } from './remoteInterface';
 import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
-// plugin settings
+// extension settings
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
 let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "localhost");
 let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
@@ -15,7 +15,7 @@ let brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandl
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    // if the configuration of the workspace changes, we simply override our values referencing the plugin settings
+    // if the configuration of the workspace changes, we simply override our values referencing the extension settings
     vscode.workspace.onDidChangeConfiguration(() => {
         asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
         simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "localhost");
