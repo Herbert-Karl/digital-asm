@@ -157,7 +157,7 @@ export class AsmDebugger extends EventEmitter {
         this.verifyBreakpoint(newBreakpoint);
         this.checkBreakpointForBRK(newBreakpoint);
         this.breakpoints.push(newBreakpoint);
-        if(!brk) { this.numberNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
+        if(!newBreakpoint.brk) { this.numberNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
         return newBreakpoint;
     }
 
@@ -261,14 +261,13 @@ export class AsmDebugger extends EventEmitter {
     private checkBreakpointForBRK(bp: AsmBreakpoint) {
         // load all lines of the source file
         const sourceCodeLines = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n');
-        // check every line for 'BRK' and if there is a ';' before it
-        sourceCodeLines.forEach((line, index) => {
-            let brk = line.indexOf("BRK");
-            let semicolon = line.indexOf(";");
-            if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
-                bp.brk = true;
-            }
-        });
+        // check the line, at which the breakpoint is at, for 'BRK' and if there is a ';' before it
+        let line = sourceCodeLines[bp.codeline-1];
+        let brk = line.indexOf("BRK");
+        let semicolon = line.indexOf(";");
+        if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
+            bp.brk = true;
+        }
     }
 
 }
