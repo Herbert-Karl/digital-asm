@@ -160,7 +160,9 @@ export class AsmDebugSession extends DebugSession {
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request) : void {
         // we omit a null check, because the launchRequest should have happened beforehand
         this.debugger.continue();
-        response.body.allThreadsContinued = false; // as we only have one thread, we signal, that we only continued one thread (marked by the thread id in the request)
+        response.body = {
+            allThreadsContinued: false // as we only have one thread, we signal, that we only continued one thread (marked by the thread id in the request)
+        };
         this.sendResponse(response);
     }
     
@@ -260,7 +262,7 @@ export class AsmDebugSession extends DebugSession {
 	}
 
     /*
-        requests for Evaluate and Source aren't implemented (empty base implementation used)
+        requests for Attatch, Evaluate and Source aren't implemented (empty base implementation used)
         because we do not support these things
         but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
