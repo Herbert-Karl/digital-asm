@@ -2,7 +2,7 @@
     "name": "digital-asm",
     "displayName": "Digital Assembler",
     "description": "Plugin offering code completion, compiling, executing and single step debugging for asm files used with Digital",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "publisher": "Herbert-Karl",
     "author": {
         "name": "Herbert Bärschneider"
@@ -22,6 +22,7 @@
         "assembler, digital"
     ],
     "preview": true,
+    "qna": false,
     "main": "./out/extension.js",
     "activationEvents": [
         "onLanguage:asm"
@@ -124,7 +125,7 @@
                         "request": "launch",
                         "name": "Ask for file name",
                         "file": "${workspaceFolder}/${command:AskForFileName}",
-                        "stopOnEntry": "true"
+                        "stopOnEntry": true
                     }
                 ],
                 "configurationSnippets": [
@@ -135,8 +136,8 @@
                             "type": "digital-conn",
                             "request": "launch",
                             "name": "Debugging",
-                            "file": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\"",
-                            "stopOnEntry": "true"
+                            "file": "^\"\\${workspaceFolder}/\\${command:AskForFileName}\"",
+                            "stopOnEntry": true
                         }
                     }
                 ],

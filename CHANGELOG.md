@@ -2,7 +2,11 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
-## 0.4.0 - tbd
+## 0.4.1 - 09.04.2020
+
+* fixed initalConfiguration
+
+## 0.4.0 - 08.04.2020
 
 * parsing command now also generates a .map file next to the .hex and .lst files
 * implemented Debugging for .asm files utilizing the Debug Adapter Protocol
