@@ -4,7 +4,7 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 
 ## 0.4.1 - 09.04.2020
 
-* fixed initalConfiguration
+* fixed initialConfiguration
 
 ## 0.4.0 - 08.04.2020
 
