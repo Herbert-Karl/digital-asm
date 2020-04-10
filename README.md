@@ -4,6 +4,7 @@
 
 This VS Code extension provides support for Assembler files for the _digital logic designer and circuit simulator_ [Digital](https://github.com/hneemann/Digital).
 It is created as part of a study work at the DHBW Mosbach.
+The extension is licensed unter GPLv3.
 
 ## Features
 
