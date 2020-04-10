@@ -43,10 +43,16 @@ export function activate(context: vscode.ExtensionContext) {
     let parseAsm = vscode.commands.registerCommand('digital-asm.parse-asm', commandFrame(commandParseAsm));
     let runAsm = vscode.commands.registerCommand('digital-asm.execute-asm', commandFrame(commandRunAsm));
     //
-    let getFileName = vscode.commands.registerCommand('digital-asm.getFileName', () => {
-        return vscode.window.showInputBox({
-            placeHolder: "Please enter the name of the file in the workspace folder."
-        });
+    let deriveFile = vscode.commands.registerCommand('digital-asm.getFile', () => {
+        // returns the fs path to the file currently in the text editor
+        let help = vscode.window.activeTextEditor;
+        if(help===undefined) {
+            // if there is neither a given path nor an active text editor, we return while showing an error message
+            vscode.window.showErrorMessage("No active file.");
+            console.error("No active file.");
+            return null;
+        }
+        return help.document.uri.fsPath;
     });
 
     // registering our provider for completions
@@ -63,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // adding the implementation of the commands to the context of the extension,
     //so that the implementations will be executed, when the commands are called
-    context.subscriptions.push(parseAsm, runAsm, getFileName);
+    context.subscriptions.push(parseAsm, runAsm, deriveFile);
 
     // adding our providers to the context of the extension
     context.subscriptions.push(completionProvider, hoverProvider, asmDebugConfigProvider, tracker);

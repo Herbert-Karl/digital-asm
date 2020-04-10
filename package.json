@@ -123,8 +123,8 @@
                     {
                         "type": "digital-conn",
                         "request": "launch",
-                        "name": "Ask for file name",
-                        "file": "${workspaceFolder}/${command:AskForFileName}",
+                        "name": "Debugging",
+                        "file": "${command:DeriveFile}",
                         "stopOnEntry": true
                     }
                 ],
@@ -136,13 +136,13 @@
                             "type": "digital-conn",
                             "request": "launch",
                             "name": "Debugging",
-                            "file": "^\"\\${workspaceFolder}/\\${command:AskForFileName}\"",
+                            "file": "^\"\\${command:DeriveFile}\"",
                             "stopOnEntry": true
                         }
                     }
                 ],
                 "variables": {
-                    "AskForFileName": "digital-asm.getFileName"
+                    "DeriveFile": "digital-asm.getFile"
                 }
             }
         ]
