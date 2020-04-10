@@ -94,11 +94,18 @@ export class RemoteInterface {
                 if(args!=="") {
                     command = command+":"+args;
                 }
-                let length = RemoteInterface.getUTF8ByteLength(command);
+        
+                // this detour before writing to socket is needed because of a specialty of the DataOutputStream/DataInputStream used in the java program
+                // we encode our command into a corresponding array of utf-8 codepoints
+                let convertedCommand = new TextEncoder().encode(command);
+                let length = RemoteInterface.getUTF8ByteLength(convertedCommand);
                 // we add the length of the command infront of the command before writing,
                 // because the simulator on the other end needs/excepts this information 
-                // (specialty of the DataOutputStream/DataInputStream used in the java program)
-                socket.write(length+command);
+                let message = new Uint8Array(length.length+convertedCommand.length);
+                message.set(length);
+                message.set(convertedCommand, length.length);
+
+                socket.write(message);
             });
 
             // when the socket gets the data, we end the socket connection and return the data from the connection
@@ -120,15 +127,16 @@ export class RemoteInterface {
         });
     }
 
-    // function calculating the length of the given string and returning it as a two byte string in utf-8 encoding
-    private static getUTF8ByteLength(command: string): string {
-        // we calculate the length of the string by encoding it into a corresponding array of utf-8 codepoints and taking the length of that one
-        let len = (new TextEncoder().encode(command)).length;
-        // then we seperate the upper and lower byte
+    // function calculating the length of the given Uint8Array (representing a string) and returning it as a two elements Uint8Array
+    // expects:
+    // length of the given array does not exceed 2^16
+    private static getUTF8ByteLength(command: Uint8Array): Uint8Array {
+        let len = command.length; 
+        // we seperate the upper and lower byte
         let high = len & 65280;
         let low = len & 255;
-        // and create a utf-8 string representation of these two bytes 
-        return String.fromCodePoint(high, low);
+        // and create a Uint8Array containing these two bytes 
+        return Uint8Array.from([high, low]);
     }
 
     // function for converting the response string from digital, which contains the current address, into a usable number
