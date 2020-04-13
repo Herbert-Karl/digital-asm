@@ -2,7 +2,7 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
-## x.y.z - tbd
+## 0.5.0 - 13.04.2020
 
 * included copyright notices to source code files 
 * fixed an error while interfacing the simulator for files with paths longer than 127 utf-8 codepoints
