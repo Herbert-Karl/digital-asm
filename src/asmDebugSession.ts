@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 import * as fs from 'fs';
 import * as path from 'path';
-import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent } from 'vscode-debugadapter';
+import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent, TerminatedEvent, OutputEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { AsmLaunchRequestArguments } from './utils';
 import { AsmDebugger } from './asmDebugger';
@@ -50,8 +50,10 @@ export class AsmDebugSession extends DebugSession {
         this.debugger = new AsmDebugger();
 
         // subscribing to the known events of our AsmDebugger
-        this.debugger.on('error', (err) => {
-            this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err));
+        this.debugger.on('error', (err: Error) => {
+            this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err.toString()));
+            this.sendEvent(new OutputEvent("Debugging exited due to following error:\n"+err));
+            this.sendEvent(new TerminatedEvent());
         });
         this.debugger.on('stopOnEntry', () => {
             this.sendEvent(new StoppedEvent('entry', AsmDebugSession.THREAD_ID));

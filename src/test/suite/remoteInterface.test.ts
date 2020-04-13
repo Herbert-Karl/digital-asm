@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as fs from 'fs';
 import * as net from 'net';
 import { after, before } from 'mocha';
 import * as path from 'path';

@@ -90,7 +90,7 @@ export class RemoteInterface {
         return new Promise<number>((resolve, reject) => {
                        
             // when the socket is connected, we write our command
-            socket.on('connect', function() {
+            socket.on('connect', () => {
                 if(args!=="") {
                     command = command+":"+args;
                 }
@@ -109,8 +109,8 @@ export class RemoteInterface {
             });
 
             // when the socket gets the data, we end the socket connection and return the data from the connection
-            socket.on('data', function(data) {
-                socket.destroy();
+            socket.on('data', (data) => {
+                socket.end();
                 let response = data.toString('utf8');
                 // checking the returned data from the simulator for an okay signal
                 if(!(response.substr(2,2)==="ok" || response.substr(2,3)==="ok:")) {
@@ -120,7 +120,7 @@ export class RemoteInterface {
                 resolve(RemoteInterface.getAddress(response));
             });
 
-            socket.on('error', function(err) {
+            socket.on('error', (err) => {
                 socket.destroy();
                 reject(err);
             });
