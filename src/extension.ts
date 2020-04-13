@@ -227,8 +227,9 @@ class AsmHoverProvider implements vscode.HoverProvider {
 
 class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
-    // function for ...
+    // function for supplementing missing values into the debug configuration and or modifiying existing ones
     // gets called before variables are substituted in the launch configuration
+    // we use it to put necessary information for launching the debugger into the configuration
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): Promise<vscode.DebugConfiguration | null> {
 
         let file: string | undefined = debugConfiguration.file;

@@ -23,7 +23,7 @@ suite('RemoteInterface Test Suite', () => {
 		let server = net.createServer();
 		server.listen(27322, "localhost");
 		// we simple answer with the same string for every connection
-		server.on('connection', function(socket) {
+		server.on('connection', (socket) => {
 			socket.write("  ok:001f");
 		});
 
@@ -40,7 +40,7 @@ suite('RemoteInterface Test Suite', () => {
 		let server = net.createServer();
 		server.listen(27323, "localhost");
 		// we simple answer with the same string for every connection
-		server.on('connection', function(socket) {
+		server.on('connection', (socket) => {
 			socket.write("this is just wrong");
 		});
 

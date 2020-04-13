@@ -79,7 +79,7 @@ export class AsmDebugger extends EventEmitter {
     // depending on the given boolean, the program either starts running or waits at the first code line 
     public start(stopOnEntry: boolean) {
         this.remoteInterface.debug(this.pathToHexFile)
-            .then((addr)=> {
+            .then((addr) => {
                 this.currentCodeLine = this.getFirstCodeLine();
                 if(stopOnEntry) {
                     this.sendEvent('stopOnEntry');
@@ -105,7 +105,7 @@ export class AsmDebugger extends EventEmitter {
     // stop the current running program
     public stop() {
         this.remoteInterface.stop()
-            .then((addr)=> {
+            .then((addr) => {
                 this.sendEvent('pause');
             })
             .catch((err) => {

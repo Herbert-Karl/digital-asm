@@ -5,6 +5,8 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 ## x.y.z - tbd
 
 * included copyright notices to source code files 
+* fixed an error while interfacing the simulator for files with paths longer than 127 utf-8 codepoints
+* changed initial debug configuration to use the currently selected file in the debugger
 
 ## 0.4.1 - 09.04.2020
 
