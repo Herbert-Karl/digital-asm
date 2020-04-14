@@ -179,16 +179,20 @@ function commandFrame(Command: (td: vscode.TextDocument) => string | null): (Uri
 // class containing our provided completions for asm files
 class AsmCompletionItemProvider implements vscode.CompletionItemProvider {
 
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-        // for collecting all of our completions
-        let completionItems = new Array<vscode.CompletionItem>();
+    // for collecting all of our completions for the mnemonics of the assembler
+    private mnemonicCompletionItems: Array<vscode.CompletionItem>;
 
-        // putting all of our mnemonics into the array of completion items
-        mnemonicsArray.forEach((elem: AsmMnemonic) => {
-            completionItems.push(createCompletionItem(elem.label, elem.detail, elem.doc, vscode.CompletionItemKind.Keyword));
+    constructor() {
+        // because the mnemonic completion items are static, we create them once and store them
+        this.mnemonicCompletionItems = new Array<vscode.CompletionItem>();
+         // putting all of our mnemonics into the array of completion items
+         mnemonicsArray.forEach((elem: AsmMnemonic) => {
+            this.mnemonicCompletionItems.push(createCompletionItem(elem.label, elem.detail, elem.doc, vscode.CompletionItemKind.Keyword));
         });
+    }
 
-        return completionItems;
+    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+        return this.mnemonicCompletionItems;
     }
 
 }
