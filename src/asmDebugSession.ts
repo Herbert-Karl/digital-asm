@@ -170,7 +170,6 @@ export class AsmDebugSession extends DebugSession {
     // override of the default implementation of the function
     // (re)start running the program
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request) : void {
-        // we omit a null check, because the launchRequest should have happened beforehand
         this.debugger.continue();
         response.body = {
             allThreadsContinued: false // as we only have one thread, we signal, that we only continued one thread (marked by the thread id in the request)
@@ -184,7 +183,6 @@ export class AsmDebugSession extends DebugSession {
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request) : void {
-        // we omit a null check, because the launchRequest should have happened beforehand
         this.debugger.step();
         this.sendResponse(response);
 	}
@@ -196,8 +194,7 @@ export class AsmDebugSession extends DebugSession {
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request) : void {
-		// we omit a null check, because the launchRequest should have happened beforehand
-        this.debugger.step();
+		this.debugger.step();
         this.sendResponse(response);
 	}
     
@@ -208,7 +205,6 @@ export class AsmDebugSession extends DebugSession {
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request) : void {
-        // we omit a null check, because the launchRequest should have happened beforehand
         this.debugger.step();
         this.sendResponse(response);
 	}
@@ -240,7 +236,6 @@ export class AsmDebugSession extends DebugSession {
         let startFrame = typeof args.startFrame === 'number' ? args.startFrame : 0;
         let endFrame = startFrame + (typeof args.levels === 'number' ? args.levels : 1);
         
-        // we omit a null check, because the launchRequest should have happened beforehand
         let stk = this.debugger.stack(startFrame, endFrame);
 
         // converting the returned quasi stackFrames into proper ones
