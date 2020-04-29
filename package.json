@@ -21,7 +21,6 @@
     "keywords": [
         "assembler, digital"
     ],
-    "preview": true,
     "qna": false,
     "main": "./out/extension.js",
     "activationEvents": [
@@ -44,7 +43,7 @@
                 },
                 "asm.assembler": {
                     "type": "string",
-                    "description": "Location of the jar file of the ASM3 programm",
+                    "description": "Location of the jar file of the ASM3 program",
                     "default": "./asm3.jar"
                 },
                 "asm.brkHandling": {
