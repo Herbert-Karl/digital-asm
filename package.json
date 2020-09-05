@@ -2,7 +2,7 @@
     "name": "digital-asm",
     "displayName": "Digital Assembler",
     "description": "Extension offering code completion, compiling, executing and single step debugging for asm files used with Digital",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "publisher": "Herbert-Karl",
     "author": {
         "name": "Herbert Bärschneider"

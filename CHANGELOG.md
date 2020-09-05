@@ -4,6 +4,12 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 
 ## x.y.z - tbd
 
+## 0.6.0 - 05.09.2020
+
+* updated readme
+* removed preview status
+* internal improvements for completion
+
 ## 0.5.0 - 13.04.2020
 
 * included copyright notices to source code files 
