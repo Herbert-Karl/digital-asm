@@ -4,6 +4,9 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 
 ## x.y.z - tbd
 
+* updated dependencies
+* internal improvements to test suite
+
 ## 0.6.0 - 05.09.2020
 
 * updated readme

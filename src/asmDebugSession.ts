@@ -27,7 +27,7 @@ const { Subject } = require('await-notify');
 // see https://github.com/microsoft/vscode-debugadapter-node/blob/master/adapter/src/debugSession.ts for the methods and variables
 export class AsmDebugSession extends DebugSession {
     
-    // because we do not support multiple threads, we hardcode an id to use as a default
+    // we do not support multiple threads
     private static THREAD_ID = 1;
 
     private debugger: AsmDebugger;
@@ -231,7 +231,7 @@ export class AsmDebugSession extends DebugSession {
     
     // override of the default implementation of the function
     // request for the stackFrames of the referenced thread
-    // importantly, the stackFrame contains the information, which line the program is currently at
+    // the stackFrame contains the information, which line the program is currently at
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request): void {
         let startFrame = typeof args.startFrame === 'number' ? args.startFrame : 0;
         let endFrame = startFrame + (typeof args.levels === 'number' ? args.levels : 1);
