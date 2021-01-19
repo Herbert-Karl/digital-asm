@@ -11,7 +11,8 @@ import * as vscode from 'vscode';
 const testFolderLocation = '/../../../src/test/examples/';
 
 suite('Extension Test Suite', () => {
-	
+	const fileEncoding = 'utf-8';
+
 	let asmExampleFile: vscode.Uri;
 	let hexExampleFile: vscode.Uri;
 	let lstExampleFile: vscode.Uri;
@@ -29,7 +30,7 @@ suite('Extension Test Suite', () => {
 	let createdTestMappingFile: vscode.Uri;
 
 	before(() => {
-		vscode.window.showInformationMessage('Start all tests.');
+		vscode.window.showInformationMessage('Start extension tests.');
 		
 		// defining URIs for the files used in the tests
 		asmExampleFile = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'example.asm'));
@@ -69,7 +70,7 @@ suite('Extension Test Suite', () => {
 		fs.unlinkSync(createdTestListingFile.fsPath); // removes the output file from this test; subsequent tests should be influenced
 		fs.unlinkSync(createdTestMappingFile.fsPath); // removes the output file from this test; subsequent tests should be influenced
 	  
-		vscode.window.showInformationMessage('All tests done!');
+		vscode.window.showInformationMessage('Finished extension tests!');
 	});
 
 	test('Parsing simple asm file', async () => {
@@ -81,16 +82,16 @@ suite('Extension Test Suite', () => {
 		assert.ifError(errorMessage);
 
 		// getting the content of the files
-		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, 'utf-8'));
-		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexExampleFile.fsPath, 'utf-8'));
-		let listingContent = standardizeLineEnding(fs.readFileSync(createdExampleListingFile.fsPath, 'utf-8'));
-		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstExampleFile.fsPath, 'utf-8'));
-		let mappingContent = standardizeLineEnding(fs.readFileSync(createdExampleMappingFile.fsPath, 'utf-8'));
-		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapExampleFile.fsPath, 'utf-8'));
+		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
+		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexExampleFile.fsPath, fileEncoding));
+		let listingContent = standardizeLineEnding(fs.readFileSync(createdExampleListingFile.fsPath, fileEncoding));
+		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstExampleFile.fsPath, fileEncoding));
+		let mappingContent = standardizeLineEnding(fs.readFileSync(createdExampleMappingFile.fsPath, fileEncoding));
+		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapExampleFile.fsPath, fileEncoding));
 
-		assert.deepEqual(parsedContent, expectedHexContent);
-		assert.deepEqual(listingContent, expectedLstContent);
-		assert.deepEqual(mappingContent, expectedMapContent);
+		assert.deepStrictEqual(parsedContent, expectedHexContent);
+		assert.deepStrictEqual(listingContent, expectedLstContent);
+		assert.deepStrictEqual(mappingContent, expectedMapContent);
 	});
 
 	test('Parsing complex asm file', async () => {
@@ -102,16 +103,16 @@ suite('Extension Test Suite', () => {
 		assert.ifError(errorMessage);
 
 		// getting the content of the files
-		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, 'utf-8'));
-		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexExampleFile.fsPath, 'utf-8'));
-		let listingContent = standardizeLineEnding(fs.readFileSync(createdExampleListingFile.fsPath, 'utf-8'));
-		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstExampleFile.fsPath, 'utf-8'));
-		let mappingContent = standardizeLineEnding(fs.readFileSync(createdExampleMappingFile.fsPath, 'utf-8'));
-		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapExampleFile.fsPath, 'utf-8'));
+		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
+		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexExampleFile.fsPath, fileEncoding));
+		let listingContent = standardizeLineEnding(fs.readFileSync(createdExampleListingFile.fsPath, fileEncoding));
+		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstExampleFile.fsPath, fileEncoding));
+		let mappingContent = standardizeLineEnding(fs.readFileSync(createdExampleMappingFile.fsPath, fileEncoding));
+		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapExampleFile.fsPath, fileEncoding));
 
-		assert.deepEqual(parsedContent, expectedHexContent);
-		assert.deepEqual(listingContent, expectedLstContent);
-		assert.deepEqual(mappingContent, expectedMapContent);
+		assert.deepStrictEqual(parsedContent, expectedHexContent);
+		assert.deepStrictEqual(listingContent, expectedLstContent);
+		assert.deepStrictEqual(mappingContent, expectedMapContent);
 	});
 
 });
