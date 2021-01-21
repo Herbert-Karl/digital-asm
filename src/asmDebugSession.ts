@@ -75,35 +75,23 @@ export class AsmDebugSession extends DebugSession {
     // Debug Adpater returns information about which capabilities it implements
     // a implemented feature is signaled by setting the corresponding flag as true
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
-        
-        // if the response body is undefined, we create it
-        response.body = response.body || {};
-        
-        // features, that aren't implemented, do not need there flags to be set to false
-        // flags without explicit value are interpreted as false
-        // check https://microsoft.github.io/debug-adapter-protocol/specification#capabilities for all possible capabilities
-        
-        // we support configurationDoneRequest, as we use it to await the breakpoints before launching
-        response.body.supportsConfigurationDoneRequest = true;
-
-        // we support restart requests for the program
-        response.body.supportsRestartRequest = true;
-
-        // we do not support Terminating the program by the debug adapter
-        response.body.supportsTerminateRequest = false;
-
-        // we do not support requests to cancel earlier requests or progress sequences
-        response.body.supportsCancelRequest = false;
-
+        response = this.writeCapabilitiesIntoResponse(response);
         this.sendResponse(response);
     }
 
-    // associated with the capability "supportsConfigurationDOneRequest"
-    // called by VSCode after initial configurations (e. g. breakpoints) have been set
+    private writeCapabilitiesIntoResponse(response: DebugProtocol.InitializeResponse): DebugProtocol.InitializeResponse {
+        response.body = response.body || {}; // creates an empty response body, if the body was undefined
+        // check https://microsoft.github.io/debug-adapter-protocol/specification#capabilities for all possible capabilities
+        response.body.supportsConfigurationDoneRequest = true;
+        response.body.supportsRestartRequest = true;
+        response.body.supportsTerminateRequest = false;
+        response.body.supportsCancelRequest = false;
+        return response;
+    }
+
+    // associated with the capability "supportsConfigurationDoneRequest"
     protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
 		super.configurationDoneRequest(response, args);
-
-		// notify the launchRequest that configuration has finished
 		this.configurationDone.notify();
 	}
 
@@ -190,7 +178,7 @@ export class AsmDebugSession extends DebugSession {
     // override of the default implementation of the function
     // request for stepping into a function if possible
     // because it isn't feasible for our language, we make one step instead
-    // the response is emtpy/ an acknowledgement
+    // the response is empty/ an acknowledgement
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request) : void {
@@ -201,7 +189,7 @@ export class AsmDebugSession extends DebugSession {
     // override of the default implementation of the function
     // request for stepping out off a function if possible
     // because it isn't feasible for our language, we make one step instead
-    // the response is emtpy/ an acknowledgement
+    // the response is empty/ an acknowledgement
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request) : void {
@@ -254,18 +242,12 @@ export class AsmDebugSession extends DebugSession {
         but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
 
-    // helper function for creating a Source object for a given filePath
-    // we don't give a sourceReference for the file
-    // params:
-    // filePath as string
-    // returns:
-    // Source object corresponding to the given filePath
     private createSource(filePath: string): Source {
-        return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath), undefined);
+        return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath));
     }
 
     // internal function for checking the source code for BRK statements and setting breakpoints for them
-    public setBreakpointsAtBRK() {
+    private setBreakpointsAtBRK() {
         // load all lines of the source file
         let sourceCodeLines = fs.readFileSync(this.debugger.getPathToAsmFile, 'utf8').split('\n');
         // check every line for 'BRK' and if there is a ';' before it
