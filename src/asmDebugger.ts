@@ -29,20 +29,19 @@ export class AsmDebugger extends EventEmitter {
     // mapping of the addresses used/returned by the digital simulator to the corresponding code lines in the asm file
     private mapAddrToCodeLine: Map<number, number>;
 
-    // array for handling our breakpoints
     private breakpoints: AsmBreakpoint[];
-    private breakpointId = 1;   // for numbering the breakpoints
+    private breakpointNumber = 1;
 
     // values for tracking state
     private currentCodeLine = 0;
-    private numberNonBRKBreakpoints = 0;
+    private numberOfNonBRKBreakpoints = 0;
 
     // for communicating with the digital simulator
     private remoteInterface: RemoteInterface;
 
     // contructor for creating debugger and defining the important internal variables
     // a call to config() should follow before using the debugger
-    // the returned object can already be used for setting up event liseteners
+    // the returned object can already be used for setting up event listeners
     public constructor() {
         super();
 
@@ -75,8 +74,6 @@ export class AsmDebugger extends EventEmitter {
         this.remoteInterface = new RemoteInterface(IPofSimulator, PortOfSimulator);
     }
 
-    // start up the program
-    // depending on the given boolean, the program either starts running or waits at the first code line 
     public start(stopOnEntry: boolean) {
         this.remoteInterface.debug(this.pathToHexFile)
             .then((addr) => {
@@ -92,17 +89,14 @@ export class AsmDebugger extends EventEmitter {
             });
     }
 
-    // run the program
     public continue() {
         this.run();
     }
 
-    // run the program only one cylce
     public step() {
         this.run(true);
     }
 
-    // stop the current running program
     public stop() {
         this.remoteInterface.stop()
             .then((addr) => {
@@ -129,7 +123,7 @@ export class AsmDebugger extends EventEmitter {
                     this.sendEvent('error', err);
                 });
         } else {
-            if(this.numberNonBRKBreakpoints===0) {
+            if(this.numberOfNonBRKBreakpoints===0) {
                 // if we have no breakpoints, which aren't based on BRK statements,
                 // we can savely run the program till a BRK statement comes up
                 this.remoteInterface.run()
@@ -169,11 +163,11 @@ export class AsmDebugger extends EventEmitter {
     // returns:
     // the new breakpoint
     public setBreakpoint(codeline: number, brk: boolean = false): AsmBreakpoint {
-        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointId++, brk, verified: false};
+        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointNumber++, brk, verified: false};
         this.verifyBreakpoint(newBreakpoint);
         this.checkBreakpointForBRK(newBreakpoint);
         this.breakpoints.push(newBreakpoint);
-        if(!newBreakpoint.brk) { this.numberNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
+        if(!newBreakpoint.brk) { this.numberOfNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
         return newBreakpoint;
     }
 
@@ -188,16 +182,15 @@ export class AsmDebugger extends EventEmitter {
         if(index >= 0) {
             let breakpoint = this.breakpoints[index];
             this.breakpoints.splice(index, 1); //removes one element in the array beginning at the position given by index, effectivly deleting the breakpoint from the array
-            if(!breakpoint.brk) { this.numberNonBRKBreakpoints--; } // decrease tracking number for non BRK breakpoints
+            if(!breakpoint.brk) { this.numberOfNonBRKBreakpoints--; } // decrease tracking number for non BRK breakpoints
             return breakpoint;
         }
         return undefined;
     }
 
-    // function for removing all breakpoints at once
     public clearAllBreakpoints() {
         this.breakpoints = new Array<AsmBreakpoint>();
-        this.numberNonBRKBreakpoints = 0;
+        this.numberOfNonBRKBreakpoints = 0;
     }
 
     // function for creating a stacktrace / array of stackframes
@@ -223,7 +216,6 @@ export class AsmDebugger extends EventEmitter {
         return frames;
     }
 
-    // for emitting events
     // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint, pause
     private sendEvent(event: string, ...args: any[]) {
         // executes the given function asynchronously as soon as possible (next iteration of the nodeJs event loop)
@@ -259,12 +251,9 @@ export class AsmDebugger extends EventEmitter {
         return this.mapAddrToCodeLine.get(0) || 1;
     }
 
-    // helper function
-    // checks if a breakpoint is on a code line, which actualy is part of the hex file
-    // sets the verified attribute accordingly
     private verifyBreakpoint(bp: AsmBreakpoint) {
-        this.mapAddrToCodeLine.forEach((value, key) => {
-            if(bp.codeline===value) {
+        this.mapAddrToCodeLine.forEach((existingCodeLine) => {
+            if(bp.codeline===existingCodeLine) {
                 bp.verified = true;
                 return;
             }
