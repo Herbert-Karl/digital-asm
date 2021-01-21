@@ -248,28 +248,8 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    // override of the default implementation of the function
-    // 
-    // empty function implementation as we do not support scopes
-    protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
-        response.body = {
-            scopes: []
-        };
-        this.sendResponse(response);
-    }
-    
-    // override of the default implementation of the function
-    // 
-    // empty function implementation as we do not support variables
-    protected  variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request) {
-        response.body = {
-            variables: []
-        };
-        this.sendResponse(response);
-	}
-
     /*
-        requests for Attatch, Evaluate and Source aren't implemented (empty base implementation used)
+        requests for Scopes, Variables, Attatch, Evaluate and Source aren't implemented (empty base implementation used)
         because we do not support these things
         but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
