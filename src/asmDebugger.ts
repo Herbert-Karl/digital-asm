@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { EventEmitter } from 'events';
 import { RemoteInterface } from './remoteInterface';
-import { AsmBreakpoint } from './utils';
+import { AsmBreakpoint } from "./asmBreakpoint";
 
 export class AsmDebugger extends EventEmitter {
 

@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent, TerminatedEvent, OutputEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { AsmLaunchRequestArguments } from './utils';
+import { ExtensionLaunchRequestArguments } from './extensionLaunchRequestArguments';
 import { AsmDebugger } from './asmDebugger';
 const { Subject } = require('await-notify');
 
@@ -112,7 +112,7 @@ export class AsmDebugSession extends DebugSession {
     // our needed arguments are part of our extension for the LaunchRequestArguments
     // sets up our AsmDebugger
     // response is empty / just an acknowledgement
-    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: AsmLaunchRequestArguments) {
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
         // passing the configuration into our asmDebugger to make it actually usable
         this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.IPofSimulator, args.PortOfSimulator);
         this.breakpointsOnBRKStatements = args.setBreakpointsAtBRK;

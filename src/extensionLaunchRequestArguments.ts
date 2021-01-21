@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 Herbert Bärschneider
+Copyright © 2021 Herbert Bärschneider
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,16 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { DebugProtocol } from 'vscode-debugprotocol';
 
-// representation of breakpoints for our debugger
-export interface AsmBreakpoint {
-    codeline: number;
-    id: number;
-    brk: boolean;
-    verified: boolean;
-}
-
-// interface containing all information needed for launching our debugger
-export interface AsmLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
+export interface ExtensionLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     stopOnEntry: boolean;
     pathToAsmFile: string;
     pathToHexFile: string;
