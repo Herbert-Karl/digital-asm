@@ -17,24 +17,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import * as vscode from 'vscode';
 import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
-// class implementing hovers for our asm mnemonics
 export class AsmHoverProvider implements vscode.HoverProvider {
 
-    private hoverMap: Map<string, vscode.Hover>;
+    private mnemonicToHover: Map<string, vscode.Hover>;
 
     constructor() {
-        this.hoverMap = new Map<string, vscode.Hover>();
-        // creating hovers for each mnemonic and putting all of them into the map with the mnemonic as key for easy retrieval
+        this.mnemonicToHover = new Map<string, vscode.Hover>();
+        this.createHovers()
+    }
+
+    private createHovers() {
         mnemonicsArray.forEach((elem: AsmMnemonic) => {
             let newHover = new vscode.Hover(elem.detail + "\n\n" + elem.doc);
-            this.hoverMap.set(elem.label, newHover);
+            this.mnemonicToHover.set(elem.label, newHover);
         });
     }
 
     public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
-        let range = document.getWordRangeAtPosition(position);
-        let word = document.getText(range);
-
-        return this.hoverMap.get(word);
+        let wordRange = document.getWordRangeAtPosition(position);
+        let focusedWord = document.getText(wordRange);
+        return this.mnemonicToHover.get(focusedWord);
     }
 }
