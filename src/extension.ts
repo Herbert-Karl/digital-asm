@@ -16,9 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { spawnSync } from 'child_process';
 import * as fs from 'fs';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'; // The module 'vscode' contains the VS Code extensibility API
 import { RemoteInterface } from './remoteInterface';
 import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
@@ -28,8 +26,7 @@ let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulat
 let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
 let brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+// an extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     // if the configuration of the workspace changes, we simply override our values referencing the extension settings
     vscode.workspace.onDidChangeConfiguration(() => {
@@ -76,7 +73,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
 
 // function implementing the parsing of a .asm file into a .hex file
@@ -144,14 +140,14 @@ function commandFrame(Command: (td: vscode.TextDocument) => string | null): (Uri
     return async function(Uri: vscode.Uri) {
         if(Uri===undefined) {
             // if the command isnt given an URI for the file, we try to infer the file meant via the active editor
-            let help = vscode.window.activeTextEditor;
-            if(help===undefined) {
+            let activeTextEditor = vscode.window.activeTextEditor;
+            if(activeTextEditor===undefined) {
                 // if there is neither a given URI nor an active text editor, we return while showing an error message
                 vscode.window.showErrorMessage("No given or active file.");
                 console.error("No given or active file.");
                 return "No given or active file.";
             }
-            Uri = help.document.uri;
+            Uri = activeTextEditor.document.uri;
         }
 
         let fileToParse = await vscode.workspace.openTextDocument(Uri);
@@ -197,8 +193,6 @@ class AsmCompletionItemProvider implements vscode.CompletionItemProvider {
 
 }
 
-// helper function
-// used to create CompletionItems and set wanted attributes
 function createCompletionItem(label: string, detail: string, doc: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
     let newCompletionItem = new vscode.CompletionItem(label, kind);
     newCompletionItem.detail = detail;
@@ -236,27 +230,26 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
     // we use it to put necessary information for launching the debugger into the configuration
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, debugConfiguration: vscode.DebugConfiguration, token?: vscode.CancellationToken | undefined): Promise<vscode.DebugConfiguration | null> {
 
-        let file: string | undefined = debugConfiguration.file;
+        let fileToDebug: string | undefined = debugConfiguration.file;
 
         // if the debug configuration isnt given a path for the file, we try to infer the file meant via the active editor
-        if(file===undefined || !fs.existsSync(file)) {
-            let help = vscode.window.activeTextEditor;
-            if(help===undefined) {
+        if(fileToDebug===undefined || !fs.existsSync(fileToDebug)) {
+            let activeTextEditor = vscode.window.activeTextEditor;
+            if(activeTextEditor===undefined) {
                 // if there is neither a given path nor an active text editor, we return while showing an error message
                 vscode.window.showErrorMessage("No given or active file.");
                 console.error("No given or active file.");
                 return null;
             }
-            file = help.document.uri.fsPath;
+            fileToDebug = activeTextEditor.document.uri.fsPath;
         }
 
         // we parse the asm file to create .hex and .map files, which are up to date with the current .asm file
-        commandParseAsm(await vscode.workspace.openTextDocument(vscode.Uri.file(file)));
+        commandParseAsm(await vscode.workspace.openTextDocument(vscode.Uri.file(fileToDebug)));
 
-        // putting our needed information into the debugConfiguration
-        debugConfiguration.pathToAsmFile = file;
-        debugConfiguration.pathToHexFile = file.replace(".asm", ".hex");
-        debugConfiguration.pathToAsmHexMapping = file.replace(".asm", ".map");
+        debugConfiguration.pathToAsmFile = fileToDebug;
+        debugConfiguration.pathToHexFile = fileToDebug.replace(".asm", ".hex");
+        debugConfiguration.pathToAsmHexMapping = fileToDebug.replace(".asm", ".map");
         debugConfiguration.setBreakpointsAtBRK = brkHandling;
         debugConfiguration.IPofSimulator = simulatorHost;
         debugConfiguration.PortOfSimulator = simulatorPort;
@@ -268,7 +261,7 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
 // class implemented to log the messages of the debug adapter protocol between the vscode generic debug ui and a running debug adapter
 // useful for checking, which requests and responses are send between those two as well as the content of those messages
-// the messages are written to a read-only outputchannel
+// the messages are written to a read-only output channel
 class AsmDebugTracker implements vscode.DebugAdapterTracker {
 
     private channel: vscode.OutputChannel;
@@ -293,7 +286,6 @@ class AsmDebugTracker implements vscode.DebugAdapterTracker {
         this.channel.appendLine("Session with debug adapter ended");
     }
 
-    // clean up function to free ressources associated with the output channel
     dispose() {
         this.channel.dispose();
     }
