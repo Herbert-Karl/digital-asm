@@ -20,7 +20,7 @@ import * as vscode from 'vscode'; // The module 'vscode' contains the VS Code ex
 import { RemoteInterface } from './remoteInterface';
 import { AsmHoverProvider } from './asmHoverProvider';
 import { AsmCompletionItemProvider } from './asmCompletionItemProvider';
-import { AsmDebugTrackerFactory } from './AsmDebugTracker';
+import { AsmDebugTrackerFactory } from './asmDebugTracker';
 
 // extension settings
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
