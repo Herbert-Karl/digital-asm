@@ -113,15 +113,7 @@ export class AsmDebugger extends EventEmitter {
     // boolean which signals, if only a single step should be made; default value is false
     private async run(singleStep: boolean = false) {
         if(singleStep) {
-            this.remoteInterface.step()
-                .then((addr) => {
-                    // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
-                    this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
-                    this.sendEvent('stopOnStep');
-                })
-                .catch((err) => {
-                    this.sendEvent('error', err);
-                });
+            this.executeSingleStep();
         } else {
             if(this.numberOfNonBRKBreakpoints===0) {
                 // if we have no breakpoints, which aren't based on BRK statements,
@@ -155,6 +147,19 @@ export class AsmDebugger extends EventEmitter {
             }
         }
     }
+
+    private executeSingleStep() {
+        this.remoteInterface.step()
+            .then((addr) => {
+                // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
+                this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
+                this.sendEvent('stopOnStep');
+            })
+            .catch((err) => {
+                this.sendEvent('error', err);
+            });
+    }
+
 
     // setting a breakpoint in the given line
     // params:
@@ -201,19 +206,21 @@ export class AsmDebugger extends EventEmitter {
     // returns:
     // an array of stackframes as untyped objects
     public stack(startFrame: number, endFrame: number): Array<any> {
-        let frames = new Array<any>();
+        let stackFrames = new Array<any>();
+        let singleStackFrame = this.createStackFrame();
+        stackFrames.push(singleStackFrame);
+        return stackFrames;
+    }
 
-        let newFrame = {
+    private createStackFrame(): any {
+        let stackFrame = {
             id: 1,
             name: path.basename(this.pathToAsmFile),
             source: this.pathToAsmFile,
             line: this.currentCodeLine,
             column: this.getColumn(this.currentCodeLine),
         };
-
-        frames.push(newFrame);
-
-        return frames;
+        return stackFrame;
     }
 
     // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint, pause
