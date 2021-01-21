@@ -21,37 +21,37 @@ import * as vscode from 'vscode';
 // the messages are written to a read-only output channel
 class AsmDebugTracker implements vscode.DebugAdapterTracker {
 
-    private channel: vscode.OutputChannel;
+    private outputChannel: vscode.OutputChannel;
 
     constructor() {
-        this.channel = vscode.window.createOutputChannel("digital-asm DAP log");
+        this.outputChannel = vscode.window.createOutputChannel("digital-asm Debug Adapter Protocol");
     }
 
     public onWillStartSession() {
-        this.channel.appendLine("Session with debug adapter starting ...");
+        this.outputChannel.appendLine("Session with debug adapter starting ...");
     }
 
     public onWillReceiveMessage(message: any) {
-        this.channel.appendLine("From VS Code: " + JSON.stringify(message));
+        this.outputChannel.appendLine("Message from VS Code: " + JSON.stringify(message));
     }
 
     public onDidSendMessage(message: any) {
-        this.channel.appendLine("To VS Code: " + JSON.stringify(message));
+        this.outputChannel.appendLine("Message from Debug Adapter: " + JSON.stringify(message));
     }
 
     public onWillStopSession() {
-        this.channel.appendLine("Session with debug adapter ended");
+        this.outputChannel.appendLine("Session with debug adapter ended.");
     }
 
     dispose() {
-        this.channel.dispose();
+        this.outputChannel.dispose();
     }
 
 }
-// factory class for producing a tracker for a given debug session
+
 export class AsmDebugTrackerFactory implements vscode.DebugAdapterTrackerFactory {
 
-    // because we use the tracker only to log the messages exchanges in the debug session, we do not use the debug session object
+    // because we use the tracker only to log the messages exchanged in the debug session, we do not use the debug session object
     public createDebugAdapterTracker(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterTracker> {
         return new AsmDebugTracker();
     }
