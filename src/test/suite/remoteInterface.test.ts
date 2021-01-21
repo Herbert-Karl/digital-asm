@@ -53,15 +53,17 @@ suite('RemoteInterface Test Suite', () => {
 		simpleTestServer.close();
 	});
 
-	test('No Server for connection', async () => {
+	test('No Server for connection', function(done) {
+		this.timeout(0);
 		let hostName = "localhost";
 		let tcpPort = 27325;
 		let remoteInterface = new RemoteInterface(hostName, tcpPort);
-		let response = await remoteInterface.run().catch((err)=>{ assert.strictEqual(err.code, "ECONNREFUSED"); });
-
-		if(response!==undefined) {
+		remoteInterface.run().then((val)=>{
 			assert.fail("the function shouldn't have returned a value");
-		}
+		}).catch((err)=>{ 
+			assert.strictEqual(err.code, "ECONNREFUSED"); 
+			done(); 
+		});
     });
 
 });
