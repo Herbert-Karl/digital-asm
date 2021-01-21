@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 Herbert Bärschneider
+Copyright © 2021 Herbert Bärschneider
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@ import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as vscode from 'vscode'; // The module 'vscode' contains the VS Code extensibility API
 import { RemoteInterface } from './remoteInterface';
-import { mnemonicsArray, AsmMnemonic } from './mnemonics';
+import { AsmHoverProvider } from './asmHoverProvider';
+import { AsmCompletionItemProvider } from './asmCompletionItemProvider';
+import { AsmDebugTrackerFactory } from './AsmDebugTracker';
 
 // extension settings
 let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
@@ -172,57 +174,6 @@ function commandFrame(Command: (td: vscode.TextDocument) => string | null): (Uri
     };
 }
 
-// class containing our provided completions for asm files
-class AsmCompletionItemProvider implements vscode.CompletionItemProvider {
-
-    // for collecting all of our completions for the mnemonics of the assembler
-    private mnemonicCompletionItems: Array<vscode.CompletionItem>;
-
-    constructor() {
-        // because the mnemonic completion items are static, we create them once and store them
-        this.mnemonicCompletionItems = new Array<vscode.CompletionItem>();
-         // putting all of our mnemonics into the array of completion items
-         mnemonicsArray.forEach((elem: AsmMnemonic) => {
-            this.mnemonicCompletionItems.push(createCompletionItem(elem.label, elem.detail, elem.doc, vscode.CompletionItemKind.Keyword));
-        });
-    }
-
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-        return this.mnemonicCompletionItems;
-    }
-
-}
-
-function createCompletionItem(label: string, detail: string, doc: string, kind: vscode.CompletionItemKind): vscode.CompletionItem {
-    let newCompletionItem = new vscode.CompletionItem(label, kind);
-    newCompletionItem.detail = detail;
-    newCompletionItem.documentation = doc;
-    return newCompletionItem;
-}
-
-// class implementing hovers for our asm mnemonics
-class AsmHoverProvider implements vscode.HoverProvider {
-
-    private hoverMap: Map<string, vscode.Hover>;
-
-    constructor() {
-        this.hoverMap = new Map<string, vscode.Hover>();
-        // creating hovers for each mnemonic and putting all of them into the map with the mnemonic as key for easy retrieval
-        mnemonicsArray.forEach((elem: AsmMnemonic) => {
-            let newHover = new vscode.Hover(elem.detail+"\n\n"+elem.doc);
-            this.hoverMap.set(elem.label, newHover);
-        });
-    }
-
-    public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
-        let range = document.getWordRangeAtPosition(position);
-        let word = document.getText(range);
-
-        return this.hoverMap.get(word);
-    }
-
-}
-
 class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
     // function for supplementing missing values into the debug configuration and or modifiying existing ones
@@ -255,49 +206,6 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
         debugConfiguration.PortOfSimulator = simulatorPort;
 
         return debugConfiguration;
-    }
-
-}
-
-// class implemented to log the messages of the debug adapter protocol between the vscode generic debug ui and a running debug adapter
-// useful for checking, which requests and responses are send between those two as well as the content of those messages
-// the messages are written to a read-only output channel
-class AsmDebugTracker implements vscode.DebugAdapterTracker {
-
-    private channel: vscode.OutputChannel;
-
-    constructor() {
-        this.channel = vscode.window.createOutputChannel("digital-asm DAP log");
-    }
-
-    public onWillStartSession() {
-        this.channel.appendLine("Session with debug adapter starting ...");
-    }
-
-    public onWillReceiveMessage(message: any) {
-        this.channel.appendLine("From VS Code: "+JSON.stringify(message));
-    }
-
-    public onDidSendMessage(message: any) {
-        this.channel.appendLine("To VS Code: "+JSON.stringify(message));
-    }
-
-    public onWillStopSession() {
-        this.channel.appendLine("Session with debug adapter ended");
-    }
-
-    dispose() {
-        this.channel.dispose();
-    }
-
-}
-
-// factory class for producing a tracker for a given debug session
-class AsmDebugTrackerFactory implements vscode.DebugAdapterTrackerFactory {
-
-    // because we use the tracker only to log the messages exchanges in the debug session, we do not use the debug session object
-    public createDebugAdapterTracker(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterTracker> {
-        return new AsmDebugTracker();
     }
 
 }
