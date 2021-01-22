@@ -13,51 +13,40 @@ suite('RemoteInterface Test Suite', () => {
 	});
 	after(() => {
 		vscode.window.showInformationMessage('Finished tests for RemoteInterface!');
-	  });
+	});
+
+	const hostName = "localhost";
+	const tcpPort = 27323;
 
 	test('Sending commands', async () => {
-		let simpleTestServer = net.createServer();
-		let hostName = "localhost";
-		let tcpPort = 27322;
-		simpleTestServer.listen(tcpPort, hostName);
-		let staticAnswerString = "  ok:001f";
-		simpleTestServer.on('connection', (socket) => {
-			socket.write(staticAnswerString);
-		});
-
+		let simpleTestServer = createListeningServer(hostName, tcpPort);
+		correctServerMessage(simpleTestServer);
 		let remoteInterface = new RemoteInterface(hostName, tcpPort);
-		let expectedAnswer = 31;
-		assert.strictEqual(await remoteInterface.step(), expectedAnswer);
-		assert.strictEqual(await remoteInterface.run(), expectedAnswer);
+		assert.strictEqual(await remoteInterface.step(), correctAnswerNumber);
+		assert.strictEqual(await remoteInterface.run(), correctAnswerNumber);
 
 		simpleTestServer.close();
 	});
 
-    test('Sending wrong data', async () => {
-		let simpleTestServer = net.createServer();
-		let hostName = "localhost";
-		let tcpPort = 27323;
-		simpleTestServer.listen(tcpPort, hostName);
-		let incorrectSocketMessage = "this is just wrong";
-		simpleTestServer.on('connection', (socket) => {
-			socket.write(incorrectSocketMessage);
-		});
-
-		let remoteInterface = new RemoteInterface(hostName, tcpPort);
-		let response = await remoteInterface.run().catch((err)=>{ assert.strictEqual(err.message, "Error received from simulator: "+incorrectSocketMessage); });
-
-		if(response!==undefined) {
+    test('Sending wrong data',  function(done) {
+		let portOffset = 2;
+		let simpleTestServer = createListeningServer(hostName, tcpPort+portOffset);
+		incorrectServerMessage(simpleTestServer);
+		let remoteInterface = new RemoteInterface(hostName, tcpPort+portOffset);
+		remoteInterface.run().then(()=>{
 			assert.fail("the function shouldn't have returned a value");
-		}
-
-		simpleTestServer.close();
+		}).catch((err)=>{ 
+			assert.strictEqual(err.message, "Error received from simulator: "+incorrectMessage); 
+		}).finally(()=> {
+			simpleTestServer.close();
+			done();
+		});
 	});
 
 	test('No Server for connection', function(done) {
 		this.timeout(0);
-		let hostName = "localhost";
-		let tcpPort = 27325;
-		let remoteInterface = new RemoteInterface(hostName, tcpPort);
+		let portOffset = 4;
+		let remoteInterface = new RemoteInterface(hostName, tcpPort+portOffset);
 		remoteInterface.run().then((val)=>{
 			assert.fail("the function shouldn't have returned a value");
 		}).catch((err)=>{ 
@@ -65,5 +54,30 @@ suite('RemoteInterface Test Suite', () => {
 			done(); 
 		});
     });
+
+	function createListeningServer(hostName: string, port: number): net.Server {
+		let simpleTestServer = net.createServer();
+		simpleTestServer.listen(port, hostName);
+		return simpleTestServer;
+	}
+
+	const correctAnswerMessage = "  ok:001f";
+	const correctAnswerNumber = 31;
+
+	function correctServerMessage(server: net.Server) {
+		defineWriteOnConnection(server, correctAnswerMessage);
+	}
+
+	const incorrectMessage = "this is just wrong"; 
+
+	function incorrectServerMessage(server: net.Server) {
+		defineWriteOnConnection(server, incorrectMessage);
+	}
+
+	function defineWriteOnConnection(server: net.Server, message: string) {
+		server.on('connection', (socket) => {
+			socket.write(message);
+		});
+	}
 
 });
