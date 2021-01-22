@@ -31,7 +31,7 @@ suite('Extension Test Suite', () => {
 
 	before(() => {
 		vscode.window.showInformationMessage('Start extension tests.');
-		
+
 		// defining URIs for the files used in the tests
 		asmExampleFile = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'example.asm'));
 	 	hexExampleFile = vscode.Uri.file(path.join(__dirname + testFolderLocation + 'example_parsed.hex'));
@@ -57,9 +57,8 @@ suite('Extension Test Suite', () => {
 		if(fs.existsSync(parsedTestFile.fsPath)) { fs.unlinkSync(parsedTestFile.fsPath); }
 		if(fs.existsSync(createdTestListingFile.fsPath)) { fs.unlinkSync(createdTestListingFile.fsPath); }
 		if(fs.existsSync(createdTestMappingFile.fsPath)) { fs.unlinkSync(createdTestMappingFile.fsPath); }
-
 	});
-	
+
 	after(() => {
 		// cleanup
 		fs.unlinkSync(parsedExampleFile.fsPath); // removes the output file from this test; subsequent tests should start without a parsed .hex file
@@ -74,9 +73,8 @@ suite('Extension Test Suite', () => {
 	});
 
 	test('Parsing simple asm file', async () => {
-		const document = await vscode.workspace.openTextDocument(asmExampleFile);
-		const editor = await vscode.window.showTextDocument(document);
-
+		await bringSourceFileIntoEditorFocus(asmExampleFile);
+		
 		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', asmExampleFile);
 
 		assert.ifError(errorMessage);
@@ -95,8 +93,7 @@ suite('Extension Test Suite', () => {
 	});
 
 	test('Parsing complex asm file', async () => {
-		const document = await vscode.workspace.openTextDocument(asmTestFile);
-		const editor = await vscode.window.showTextDocument(document);
+		await bringSourceFileIntoEditorFocus(asmTestFile);
 
 		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', asmTestFile);
 
@@ -115,6 +112,30 @@ suite('Extension Test Suite', () => {
 		assert.deepStrictEqual(mappingContent, expectedMapContent);
 	});
 
+	test('Parsing file by editor focus', async () => {
+		await bringSourceFileIntoEditorFocus(asmExampleFile);
+
+		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', undefined);
+
+		assert.ifError(errorMessage);
+
+		// getting the content of the files
+		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
+		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexExampleFile.fsPath, fileEncoding));
+		let listingContent = standardizeLineEnding(fs.readFileSync(createdExampleListingFile.fsPath, fileEncoding));
+		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstExampleFile.fsPath, fileEncoding));
+		let mappingContent = standardizeLineEnding(fs.readFileSync(createdExampleMappingFile.fsPath, fileEncoding));
+		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapExampleFile.fsPath, fileEncoding));
+
+		assert.deepStrictEqual(parsedContent, expectedHexContent);
+		assert.deepStrictEqual(listingContent, expectedLstContent);
+		assert.deepStrictEqual(mappingContent, expectedMapContent);
+	});
+
+	async function bringSourceFileIntoEditorFocus(file: vscode.Uri) {
+		let document = await vscode.workspace.openTextDocument(file);
+		await vscode.window.showTextDocument(document);
+	}
 });
 
 // replaces all \r\n with \n to end any problems with platform specific line endings when generating the test files
