@@ -43,15 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
     let runAsm = vscode.commands.registerCommand('digital-asm.execute-asm', commandFrame(commandRunAsm));
     //
     let deriveFile = vscode.commands.registerCommand('digital-asm.getFile', () => {
-        // returns the fs path to the file currently in the text editor
-        let help = vscode.window.activeTextEditor;
-        if(help===undefined) {
-            // if there is neither a given path nor an active text editor, we return while showing an error message
-            vscode.window.showErrorMessage("No active file.");
-            console.error("No active file.");
-            return null;
-        }
-        return help.document.uri.fsPath;
+        return inferTargetFileFromActiveEditor().fsPath;
     });
 
     // registering our provider for completions
@@ -132,7 +124,7 @@ function commandRunAsm(td: vscode.TextDocument) {
 // function implementing the command, which shall be executed with the given file
 // return:
 // an asyncronise function which wraps the command with checks for the given Uri, language of the File and the asm3 jar file
-function commandFrame(Command: (td: vscode.TextDocument) => void): (Uri: vscode.Uri, ) => Promise<void> {
+function commandFrame(command: (td: vscode.TextDocument) => void): (Uri: vscode.Uri, ) => Promise<void> {
     return async function(Uri: vscode.Uri) {
         if(Uri===undefined) {
             Uri = inferTargetFileFromActiveEditor();
@@ -140,7 +132,7 @@ function commandFrame(Command: (td: vscode.TextDocument) => void): (Uri: vscode.
 
         let fileToParse = await vscode.workspace.openTextDocument(Uri);
 
-        if(fileToParse.languageId!=='asm') {
+        if(!isSupportedLanguage(fileToParse)) {
             let fileLanguageIdMismatchError = new Error("Language of file isn't supported.");
             notifyUserAboutError(fileLanguageIdMismatchError);
             throw fileLanguageIdMismatchError;
@@ -153,7 +145,7 @@ function commandFrame(Command: (td: vscode.TextDocument) => void): (Uri: vscode.
         }
 
         // execution of the given command
-        Command(fileToParse);
+        command(fileToParse);
     };
 }
 
@@ -167,6 +159,10 @@ function inferTargetFileFromActiveEditor(): vscode.Uri {
     }
     return activeTextEditor.document.uri;
 } 
+
+function isSupportedLanguage(file: vscode.TextDocument): boolean {
+    return file.languageId==='asm';
+}
 
 function notifyUserAboutError(err: Error) {
     vscode.window.showErrorMessage(err.message);
@@ -184,14 +180,7 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
         // if the debug configuration isnt given a path for the file, we try to infer the file meant via the active editor
         if(fileToDebug===undefined || !fs.existsSync(fileToDebug)) {
-            let activeTextEditor = vscode.window.activeTextEditor;
-            if(activeTextEditor===undefined) {
-                // if there is neither a given path nor an active text editor, we return while showing an error message
-                vscode.window.showErrorMessage("No given or active file.");
-                console.error("No given or active file.");
-                return null;
-            }
-            fileToDebug = activeTextEditor.document.uri.fsPath;
+            fileToDebug = inferTargetFileFromActiveEditor().fsPath;
         }
 
         // we parse the asm file to create .hex and .map files, which are up to date with the current .asm file
