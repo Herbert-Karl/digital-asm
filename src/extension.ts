@@ -92,8 +92,7 @@ function commandParseAsm(td: vscode.TextDocument) {
         let pathToAsm = td.uri.path;
         let child = spawnSync('java', ["-jar", asm3JarPath, pathToAsm]);
     } catch (ex) {
-        vscode.window.showErrorMessage(ex.message);
-        console.error(ex);
+        notifyUserAboutError(ex);
         throw ex;
     }
 }
@@ -119,13 +118,11 @@ function commandRunAsm(td: vscode.TextDocument) {
         let remoteInterface = new RemoteInterface(simulatorHost, simulatorPort);
         remoteInterface.start(hexPath)
             .catch( (err) => {
-                vscode.window.showErrorMessage(err.message);
-                console.error(err);
+                notifyUserAboutError(err);
                 throw err;
             });
     } catch (ex) {
-        vscode.window.showErrorMessage(ex.message);
-        console.error(ex);
+        notifyUserAboutError(ex);
         throw ex;
     }
 }
@@ -144,35 +141,36 @@ function commandFrame(Command: (td: vscode.TextDocument) => void): (Uri: vscode.
         let fileToParse = await vscode.workspace.openTextDocument(Uri);
 
         if(fileToParse.languageId!=='asm') {
-            // if the file doesn't match the asm languageId, we don't try to work with it and stop while showing an error message
-            vscode.window.showErrorMessage("Language of file isn't supported.");
-            console.error("Language of file isn't supported.");
-            throw new Error("Language of file isn't supported.");
+            let fileLanguageIdMismatchError = new Error("Language of file isn't supported.");
+            notifyUserAboutError(fileLanguageIdMismatchError);
+            throw fileLanguageIdMismatchError;
         }
 
         if(!fs.existsSync(asm3JarPath)) {
-            // if we don't find a file at the given path for the asm3.jar, we alert the user and abort
-            // continuing would creating errors when trying to use the jar file
-            vscode.window.showErrorMessage("Path for asm3.jar doesn't point to a existing file.");
-            console.error("Path for asm3.jar doesn't point to a existing file.");
-            throw new Error("Path for asm3.jar doesn't point to a existing file.");
+            let asm3JarPathIsWrongError = new Error("Path for asm3.jar doesn't point to a existing file.");
+            notifyUserAboutError(asm3JarPathIsWrongError);
+            throw asm3JarPathIsWrongError;
         }
 
         // execution of the given command
         Command(fileToParse);
     };
+}
 
-    function inferTargetFileFromActiveEditor(): vscode.Uri {
-        let activeTextEditor = vscode.window.activeTextEditor;
-        if(activeTextEditor===undefined) {
-            // if there is neither a given URI nor an active text editor, we stop while showing an error message
-            vscode.window.showErrorMessage("No given or active file.");
-            console.error("No given or active file.");
-            throw new Error("No given or active file for Debugging.");
-        }
-        return activeTextEditor.document.uri;
-    } 
+function inferTargetFileFromActiveEditor(): vscode.Uri {
+    let activeTextEditor = vscode.window.activeTextEditor;
+    if(activeTextEditor===undefined) {
+        // if there is neither a given URI nor an active text editor, we stop while showing an error message
+        let noFileToBeInferedError = new Error("No active file to use for debugging.");
+        notifyUserAboutError(noFileToBeInferedError);
+        throw noFileToBeInferedError;
+    }
+    return activeTextEditor.document.uri;
+} 
 
+function notifyUserAboutError(err: Error) {
+    vscode.window.showErrorMessage(err.message);
+    console.error(err.message);
 }
 
 class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
