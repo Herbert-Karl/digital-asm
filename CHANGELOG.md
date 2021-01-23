@@ -6,6 +6,7 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 
 * updated dependencies
 * internal improvements to test suite
+* internal improvements to the existing code
 
 ## 0.6.0 - 05.09.2020
 
