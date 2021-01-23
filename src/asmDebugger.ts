@@ -32,7 +32,6 @@ export class AsmDebugger extends EventEmitter {
     private breakpoints: AsmBreakpoint[];
     private breakpointNumber = 1;
 
-    // values for tracking state
     private currentCodeLine = 0;
     private numberOfNonBRKBreakpoints = 0;
 
@@ -107,10 +106,6 @@ export class AsmDebugger extends EventEmitter {
             });
     }
 
-    // internal function managing the prorgam execution
-    // the program will be run depending on the state of the debugger
-    // params:
-    // boolean which signals, if only a single step should be made; default value is false
     private async run(singleStep: boolean = false) {
         if(singleStep) {
             this.executeStepCommand();
@@ -176,7 +171,7 @@ export class AsmDebugger extends EventEmitter {
     }
 
     private isBreakpointAtCurrentCodeLine(): boolean {
-        let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
+        let index = this.breakpoints.findIndex(breakpoint => breakpoint.codeline === this.currentCodeLine);
         return index!==-1;
     }
 
@@ -250,12 +245,10 @@ export class AsmDebugger extends EventEmitter {
         });
     }
 
-    // getter function for the breakpoints variable
     public get getBreakpoints() {
         return this.breakpoints;
     }
 
-    // getter function for the underlying .asm file
     public get getPathToAsmFile() {
         return this.pathToAsmFile;
     }
@@ -269,12 +262,10 @@ export class AsmDebugger extends EventEmitter {
         return codeLine.indexOf(codeLine.trimLeft());
     }
 
-    // helper function
-    // uses the mapping between codelines and hex address
-    // returns:
-    // the code line number for the first address in the hex file; defaults to 1, if for some reason, there is no codeline for address 0
+    private static DEFAULT_FIRST_CODELINE = 1;
+    
     private getFirstCodeLine(): number {
-        return this.mapAddrToCodeLine.get(0) || 1;
+        return this.mapAddrToCodeLine.get(0) || AsmDebugger.DEFAULT_FIRST_CODELINE;
     }
 
     private verifyBreakpoint(bp: AsmBreakpoint) {
@@ -286,7 +277,6 @@ export class AsmDebugger extends EventEmitter {
         });
     }
 
-    // helper function
     // checks if a breakpoint is on a code line with a brk statement
     // sets the brk attribute accordingly
     private checkBreakpointForBRK(bp: AsmBreakpoint) {

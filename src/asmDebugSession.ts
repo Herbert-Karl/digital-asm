@@ -27,28 +27,27 @@ const { Subject } = require('await-notify');
 // see https://github.com/microsoft/vscode-debugadapter-node/blob/master/adapter/src/debugSession.ts for the methods and variables
 export class AsmDebugSession extends DebugSession {
     
-    // we do not support multiple threads
-    private static THREAD_ID = 1;
+    private static THREAD_ID = 1; // we do not support multiple threads
 
-    private debugger: AsmDebugger;
+    private debugger: AsmDebugger = new AsmDebugger();
 
-    private breakpointsOnBRKStatements: boolean;
+    private breakpointsOnBRKStatements: boolean = true;
 
     // used internaly to await/notify ourselves when the configuration is done and we can proceed with lauchning the debugger
     private configurationDone = new Subject();
 
     public constructor() {
         super();
+        this.setDebuggerIndexBase();
+        this.setUpEventListeners();
+    }
 
-        // debugger uses zero-based lines and columns
+    private setDebuggerIndexBase() {
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
+    }
 
-        this.breakpointsOnBRKStatements = true;
-
-        // creating the debugger object in the constructor to set up event listeners 
-        this.debugger = new AsmDebugger();
-
+    private setUpEventListeners() {
         // subscribing to the known events of our AsmDebugger
         this.debugger.on('error', (err: Error) => {
             this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err.toString()));
@@ -67,11 +66,9 @@ export class AsmDebugSession extends DebugSession {
         this.debugger.on('pause', () => {
             this.sendEvent(new StoppedEvent('pause', AsmDebugSession.THREAD_ID));
         });
-
     }
 
-    // override of the default implementation of the function
-    // first request to the Degub Adapter, when starting debugging
+    // first request to the Debug Adapter, when starting debugging
     // Debug Adpater returns information about which capabilities it implements
     // a implemented feature is signaled by setting the corresponding flag as true
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
@@ -99,7 +96,6 @@ export class AsmDebugSession extends DebugSession {
     // function for starting the debuggee
     // our needed arguments are part of our extension for the LaunchRequestArguments
     // sets up our AsmDebugger
-    // response is empty / just an acknowledgement
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
         // passing the configuration into our asmDebugger to make it actually usable
         this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.IPofSimulator, args.PortOfSimulator);
@@ -119,15 +115,13 @@ export class AsmDebugSession extends DebugSession {
         // launching/starting
         this.debugger.start(args.stopOnEntry);
 
-        this.sendResponse(response);
+        this.sendResponse(response); // response is just an acknowledgement
     }
  
-    // override of the default implementation of the function
     // associated with the capability "supportsRestartRequest"
-    // response is empty / just an acknowledgement that the request has been done
     protected restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request): void {
         this.debugger.start(true);
-        this.sendResponse(response);
+        this.sendResponse(response); // response is just an acknowledgement that the request has been done
 	}
 
     // override of the default implementation of the function
@@ -155,8 +149,6 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    // override of the default implementation of the function
-    // (re)start running the program
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request) : void {
         this.debugger.continue();
         response.body = {
@@ -197,17 +189,14 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
 	}
 
-    // override of the default implementation of the function
-    // request to stop executing the program
-    // the response is only an acknowledgement
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request) : void {
         this.debugger.stop();
-        this.sendResponse(response);
+        this.sendResponse(response); // the response is only an acknowledgement
 	}
     
     // override of the default implementation of the function
     // request for all threads in the current debugger state
-    // we support/use only one thread, so we jsut return a default thread
+    // we support/use only one thread
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
 		response.body = {
 			threads: [
