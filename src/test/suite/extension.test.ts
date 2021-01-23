@@ -136,6 +136,16 @@ suite('Extension Test Suite', () => {
 		let document = await vscode.workspace.openTextDocument(file);
 		await vscode.window.showTextDocument(document);
 	}
+
+	test('Attempt parsing no file', async () => {
+		await closeActiveEditor();
+		assert.rejects(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', undefined));
+	});
+
+	async function closeActiveEditor() {
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+	}
+
 });
 
 // replaces all \r\n with \n to end any problems with platform specific line endings when generating the test files
