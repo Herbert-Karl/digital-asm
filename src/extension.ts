@@ -83,20 +83,19 @@ export function deactivate() {}
 // params:
 // the function takes the file, that shall be parsed, as a TextDocument
 // return:
-// if there is an error, an error message is returned as string
+// if there is an error, an error is thrown
 // if the function ended successful, `null` will be returned
 // expects:
 // TextDocument is a .asm file
-function commandParseAsm(td: vscode.TextDocument): string | null {
+function commandParseAsm(td: vscode.TextDocument) {
     try {
         let pathToAsm = td.uri.path;
         let child = spawnSync('java', ["-jar", asm3JarPath, pathToAsm]);
     } catch (ex) {
         vscode.window.showErrorMessage(ex.message);
         console.error(ex);
-        return ex.message;
+        throw ex;
     }
-    return null;
 }
 
 // function implementing the execution of a .asm file
@@ -105,18 +104,16 @@ function commandParseAsm(td: vscode.TextDocument): string | null {
 // params:
 // the function takes the file, that shall be run, as a TextDocument
 // return:
-// if there is an error, an error message is returned as string
+// if there is an error, an error is thrown
 // if the function ended successful, `null` will be returned
 // futhermore the content of the file will start to run in the digitial simulator
 // expects:
 // TextDocument is a .asm file
 // digital simulator program is run on the local machine
-function commandRunAsm(td: vscode.TextDocument): string | null {
+function commandRunAsm(td: vscode.TextDocument) {
     try {
-        let error = commandParseAsm(td);
-        if (error !== null) {
-            return error;
-        }
+        commandParseAsm(td);
+        
         let hexPath = td.uri.fsPath.replace(".asm", ".hex");
 
         let remoteInterface = new RemoteInterface(simulatorHost, simulatorPort);
@@ -124,13 +121,13 @@ function commandRunAsm(td: vscode.TextDocument): string | null {
             .catch( (err) => {
                 vscode.window.showErrorMessage(err.message);
                 console.error(err);
+                throw err;
             });
     } catch (ex) {
         vscode.window.showErrorMessage(ex.message);
         console.error(ex);
-        return ex.message;
+        throw ex;
     }
-    return null;
 }
 
 // function implementing checks before executing a given command
@@ -138,40 +135,44 @@ function commandRunAsm(td: vscode.TextDocument): string | null {
 // function implementing the command, which shall be executed with the given file
 // return:
 // an asyncronise function which wraps the command with checks for the given Uri, language of the File and the asm3 jar file
-function commandFrame(Command: (td: vscode.TextDocument) => string | null): (Uri: vscode.Uri, ) => Promise<string | null> {
+function commandFrame(Command: (td: vscode.TextDocument) => void): (Uri: vscode.Uri, ) => Promise<void> {
     return async function(Uri: vscode.Uri) {
         if(Uri===undefined) {
-            // if the command isnt given an URI for the file, we try to infer the file meant via the active editor
-            let activeTextEditor = vscode.window.activeTextEditor;
-            if(activeTextEditor===undefined) {
-                // if there is neither a given URI nor an active text editor, we return while showing an error message
-                vscode.window.showErrorMessage("No given or active file.");
-                console.error("No given or active file.");
-                return "No given or active file.";
-            }
-            Uri = activeTextEditor.document.uri;
+            Uri = inferTargetFileFromActiveEditor();
         }
 
         let fileToParse = await vscode.workspace.openTextDocument(Uri);
 
         if(fileToParse.languageId!=='asm') {
-            // if the file doesn't match the asm languageId, we don't try to work with it and return while showing an error message
+            // if the file doesn't match the asm languageId, we don't try to work with it and stop while showing an error message
             vscode.window.showErrorMessage("Language of file isn't supported.");
             console.error("Language of file isn't supported.");
-            return "Language of file isn't supported.";
+            throw new Error("Language of file isn't supported.");
         }
 
         if(!fs.existsSync(asm3JarPath)) {
             // if we don't find a file at the given path for the asm3.jar, we alert the user and abort
-            // continuing would creating errors when trying to access the classes contained in the jar file
+            // continuing would creating errors when trying to use the jar file
             vscode.window.showErrorMessage("Path for asm3.jar doesn't point to a existing file.");
             console.error("Path for asm3.jar doesn't point to a existing file.");
-            return "Path for asm3.jar doesn't point to a existing file.";
+            throw new Error("Path for asm3.jar doesn't point to a existing file.");
         }
 
         // execution of the given command
-        return Command(fileToParse);
+        Command(fileToParse);
     };
+
+    function inferTargetFileFromActiveEditor(): vscode.Uri {
+        let activeTextEditor = vscode.window.activeTextEditor;
+        if(activeTextEditor===undefined) {
+            // if there is neither a given URI nor an active text editor, we stop while showing an error message
+            vscode.window.showErrorMessage("No given or active file.");
+            console.error("No given or active file.");
+            throw new Error("No given or active file for Debugging.");
+        }
+        return activeTextEditor.document.uri;
+    } 
+
 }
 
 class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {

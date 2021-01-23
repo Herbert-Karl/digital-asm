@@ -75,9 +75,7 @@ suite('Extension Test Suite', () => {
 	test('Parsing simple asm file', async () => {
 		await bringSourceFileIntoEditorFocus(asmExampleFile);
 		
-		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', asmExampleFile);
-
-		assert.ifError(errorMessage);
+		await assert.doesNotReject(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', asmExampleFile));
 
 		// getting the content of the files
 		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
@@ -95,9 +93,7 @@ suite('Extension Test Suite', () => {
 	test('Parsing complex asm file', async () => {
 		await bringSourceFileIntoEditorFocus(asmTestFile);
 
-		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', asmTestFile);
-
-		assert.ifError(errorMessage);
+		await assert.doesNotReject(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', asmTestFile));
 
 		// getting the content of the files
 		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
@@ -115,9 +111,7 @@ suite('Extension Test Suite', () => {
 	test('Parsing file by editor focus', async () => {
 		await bringSourceFileIntoEditorFocus(asmExampleFile);
 
-		let errorMessage = await vscode.commands.executeCommand('digital-asm.parse-asm', undefined);
-
-		assert.ifError(errorMessage);
+		await assert.doesNotReject(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', undefined));
 
 		// getting the content of the files
 		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
@@ -139,7 +133,7 @@ suite('Extension Test Suite', () => {
 
 	test('Attempt parsing no file', async () => {
 		await closeActiveEditor();
-		assert.rejects(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', undefined));
+		await assert.rejects(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', undefined));
 	});
 
 	async function closeActiveEditor() {
