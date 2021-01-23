@@ -113,46 +113,16 @@ export class AsmDebugger extends EventEmitter {
     // boolean which signals, if only a single step should be made; default value is false
     private async run(singleStep: boolean = false) {
         if(singleStep) {
-            this.executeSingleStep();
+            this.executeStepCommand();
         } else {
-            if(this.numberOfNonBRKBreakpoints===0) {
-                // if we have no breakpoints, which aren't based on BRK statements,
-                // we can savely run the program till a BRK statement comes up
-                this.remoteInterface.run()
-                    .then((addr) => {
-                        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
-                        this.sendEvent('stopOnBreakpoint');
-                    })
-                    .catch((err) => {
-                        this.sendEvent('error', err);
-                    });
-            } else {
-                // because there are non BRK breakpoints, we run the program step by step, until we reach a codeline with a breakpoint
-                let looping: boolean = true;
-                while(looping) {
-                    try {
-                        let addr = await this.remoteInterface.step();
-                        // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
-                        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
-                        let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
-                        // if we have a breakpoint at the current codeline, we stop
-                        if(index!==-1) {
-                            looping = false;
-                            this.sendEvent('stopOnBreakpoint');
-                        }
-                    } catch(err) {  // for possible errors when await -ing 
-                        this.sendEvent('error', err);
-                    }
-                }
-            }
+            await this.executeTillBreakpoint();
         }
     }
 
-    private executeSingleStep() {
+    private executeStepCommand() {
         this.remoteInterface.step()
-            .then((addr) => {
-                // we map the returned address to the codeline; the construct behind the map.get covers the case that the map returnes undefined
-                this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
+            .then((address) => {
+                this.updateCurrentCodeline(address);
                 this.sendEvent('stopOnStep');
             })
             .catch((err) => {
@@ -160,6 +130,55 @@ export class AsmDebugger extends EventEmitter {
             });
     }
 
+    private async executeTillBreakpoint() {
+        if(this.numberOfNonBRKBreakpoints===0) {
+            this.executeRunCommand();
+        } else {
+            await this.loopStepsAndCheckForBreakpoints();
+        }
+    }
+
+    private executeRunCommand() {
+        this.remoteInterface.run()
+            .then((address) => {
+                this.updateCurrentCodeline(address);
+                this.sendEvent('stopOnBreakpoint');
+            })
+            .catch((err) => {
+                this.sendEvent('error', err);
+            });
+    }
+
+    private loopSteps: boolean = true;
+
+    private async loopStepsAndCheckForBreakpoints() {
+        this.loopSteps = true;
+        while(this.loopSteps) {
+            try {
+                await this.executeSingleStepAndCheckForBreakpoint();
+            } catch(err) {
+                this.sendEvent('error', err);
+            }
+        } 
+    }
+
+    private async executeSingleStepAndCheckForBreakpoint() {
+        let address = await this.remoteInterface.step();
+        this.updateCurrentCodeline(address);
+        if(this.isBreakpointAtCurrentCodeLine()) {
+            this.loopSteps = false;
+            this.sendEvent('stopOnBreakpoint');
+        }
+    }
+
+    private updateCurrentCodeline(addr: number) {
+        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
+    }
+
+    private isBreakpointAtCurrentCodeLine(): boolean {
+        let index = this.breakpoints.findIndex(bp => bp.codeline === this.currentCodeLine);
+        return index!==-1;
+    }
 
     // setting a breakpoint in the given line
     // params:
