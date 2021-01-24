@@ -21,21 +21,13 @@ import { RemoteInterface } from './remoteInterface';
 import { AsmHoverProvider } from './asmHoverProvider';
 import { AsmCompletionItemProvider } from './asmCompletionItemProvider';
 import { AsmDebugTrackerFactory } from './asmDebugTracker';
-
-// extension settings
-let asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
-let simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "localhost");
-let simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
-let brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
+import { ExtensionSettings } from './extensionSettings';
 
 // an extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    // if the configuration of the workspace changes, we simply override our values referencing the extension settings
+    
     vscode.workspace.onDidChangeConfiguration(() => {
-        asm3JarPath = vscode.workspace.getConfiguration().get<string>('asm.assembler', "./asm3.jar");
-        simulatorHost = vscode.workspace.getConfiguration().get<string>('asm.simulatorHost', "localhost");
-        simulatorPort = vscode.workspace.getConfiguration().get<number>('asm.simulatorPort', 41114);
-        brkHandling = vscode.workspace.getConfiguration().get<boolean>('asm.brkHandling', true);
+        ExtensionSettings.updateValuesFromWorkspaceConfiguration();
     });
 
     // registering commands
@@ -82,7 +74,7 @@ export function deactivate() {}
 function commandParseAsm(td: vscode.TextDocument) {
     try {
         let pathToAsm = td.uri.path;
-        let child = spawnSync('java', ["-jar", asm3JarPath, pathToAsm]);
+        let child = spawnSync('java', ["-jar", ExtensionSettings.asm3JarPath, pathToAsm]);
     } catch (ex) {
         notifyUserAboutError(ex);
         throw ex;
@@ -107,7 +99,7 @@ function commandRunAsm(td: vscode.TextDocument) {
         
         let hexPath = td.uri.fsPath.replace(".asm", ".hex");
 
-        let remoteInterface = new RemoteInterface(simulatorHost, simulatorPort);
+        let remoteInterface = new RemoteInterface(ExtensionSettings.simulatorHost, ExtensionSettings.simulatorPort);
         remoteInterface.start(hexPath)
             .catch( (err) => {
                 notifyUserAboutError(err);
@@ -138,7 +130,7 @@ function commandFrame(command: (td: vscode.TextDocument) => void): (Uri: vscode.
             throw fileLanguageIdMismatchError;
         }
 
-        if(!fs.existsSync(asm3JarPath)) {
+        if(!fs.existsSync(ExtensionSettings.asm3JarPath)) {
             let asm3JarPathIsWrongError = new Error("Path for asm3.jar doesn't point to a existing file.");
             notifyUserAboutError(asm3JarPathIsWrongError);
             throw asm3JarPathIsWrongError;
@@ -194,9 +186,9 @@ class AsmDebugConfigurationProvider implements vscode.DebugConfigurationProvider
         debugConfiguration.pathToAsmFile = targetFile;
         debugConfiguration.pathToHexFile = targetFile.replace(".asm", ".hex");
         debugConfiguration.pathToAsmHexMapping = targetFile.replace(".asm", ".map");
-        debugConfiguration.setBreakpointsAtBRK = brkHandling;
-        debugConfiguration.IPofSimulator = simulatorHost;
-        debugConfiguration.PortOfSimulator = simulatorPort;
+        debugConfiguration.setBreakpointsAtBRK = ExtensionSettings.useBRKMnemonicsAsBreakpoints;
+        debugConfiguration.IPofSimulator = ExtensionSettings.simulatorHost;
+        debugConfiguration.PortOfSimulator = ExtensionSettings.simulatorPort;
         return debugConfiguration;
     }
 

@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 import * as vscode from 'vscode';
 
-class ExtensionSettings {
+export class ExtensionSettings {
     private static readonly DEFAULT_ASM3JAR_PATH = "./asm3.jar";
     private static readonly DEFAULT_SIMULATOR_HOST = "localhost";
     private static readonly DEFAULT_SIMULATOR_PORT = 41114;
