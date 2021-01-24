@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
     let hoverProvider = vscode.languages.registerHoverProvider('asm', new AsmHoverProvider());
 
     // passing our debug configuration provider for our debugger type
-    let asmDebugConfigProvider = vscode.debug.registerDebugConfigurationProvider('digital-conn', new AsmConfigurationProvider());
+    let asmDebugConfigProvider = vscode.debug.registerDebugConfigurationProvider('digital-conn', new AsmDebugConfigurationProvider());
 
     // creating our tracker object for our asm debug session
     let tracker = vscode.debug.registerDebugAdapterTrackerFactory('digital-conn', new AsmDebugTrackerFactory());
@@ -169,7 +169,7 @@ function notifyUserAboutError(err: Error) {
     console.error(err.message);
 }
 
-class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
+class AsmDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
 
     // function for supplementing missing values into the debug configuration and or modifiying existing ones
     // gets called before variables are substituted in the launch configuration
@@ -186,13 +186,17 @@ class AsmConfigurationProvider implements vscode.DebugConfigurationProvider {
         // we parse the asm file to create .hex and .map files, which are up to date with the current .asm file
         commandParseAsm(await vscode.workspace.openTextDocument(vscode.Uri.file(fileToDebug)));
 
-        debugConfiguration.pathToAsmFile = fileToDebug;
-        debugConfiguration.pathToHexFile = fileToDebug.replace(".asm", ".hex");
-        debugConfiguration.pathToAsmHexMapping = fileToDebug.replace(".asm", ".map");
+        debugConfiguration = this.addAsmSpecificValuesToDebugConfiguration(debugConfiguration, fileToDebug);
+        return debugConfiguration;
+    }
+
+    private addAsmSpecificValuesToDebugConfiguration(debugConfiguration: vscode.DebugConfiguration, targetFile: string): vscode.DebugConfiguration {
+        debugConfiguration.pathToAsmFile = targetFile;
+        debugConfiguration.pathToHexFile = targetFile.replace(".asm", ".hex");
+        debugConfiguration.pathToAsmHexMapping = targetFile.replace(".asm", ".map");
         debugConfiguration.setBreakpointsAtBRK = brkHandling;
         debugConfiguration.IPofSimulator = simulatorHost;
         debugConfiguration.PortOfSimulator = simulatorPort;
-
         return debugConfiguration;
     }
 
