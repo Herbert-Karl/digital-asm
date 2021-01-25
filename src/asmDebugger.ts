@@ -80,7 +80,7 @@ export class AsmDebugger extends EventEmitter {
                 if(stopOnEntry) {
                     this.sendEvent('stopOnEntry');
                 } else {
-                    this.run();
+                    this.executeTillBreakpoint();
                 }
             })
             .catch((err) => {
@@ -89,11 +89,11 @@ export class AsmDebugger extends EventEmitter {
     }
 
     public continue() {
-        this.run();
+        this.executeTillBreakpoint();
     }
 
     public step() {
-        this.run(true);
+        this.executeStepCommand();
     }
 
     public stop() {
@@ -104,14 +104,6 @@ export class AsmDebugger extends EventEmitter {
             .catch((err) => {
                 this.sendEvent('error', err);
             });
-    }
-
-    private async run(singleStep: boolean = false) {
-        if(singleStep) {
-            this.executeStepCommand();
-        } else {
-            await this.executeTillBreakpoint();
-        }
     }
 
     private executeStepCommand() {
