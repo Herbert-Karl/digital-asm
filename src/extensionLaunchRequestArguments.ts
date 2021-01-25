@@ -22,6 +22,6 @@ export interface ExtensionLaunchRequestArguments extends DebugProtocol.LaunchReq
     pathToHexFile: string;
     pathToAsmHexMapping: string;
     setBreakpointsAtBRK: boolean;
-    IPofSimulator: string; 
+    HostOfSimulator: string; 
     PortOfSimulator: number;
 }

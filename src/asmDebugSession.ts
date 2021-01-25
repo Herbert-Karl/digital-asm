@@ -98,7 +98,7 @@ export class AsmDebugSession extends DebugSession {
     // sets up our AsmDebugger
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
         // passing the configuration into our asmDebugger to make it actually usable
-        this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.IPofSimulator, args.PortOfSimulator);
+        this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.HostOfSimulator, args.PortOfSimulator);
         this.breakpointsOnBRKStatements = args.setBreakpointsAtBRK;
 
         if(this.breakpointsOnBRKStatements) {

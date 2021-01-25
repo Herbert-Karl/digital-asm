@@ -187,7 +187,7 @@ class AsmDebugConfigurationProvider implements vscode.DebugConfigurationProvider
         debugConfiguration.pathToHexFile = targetFile.replace(".asm", ".hex");
         debugConfiguration.pathToAsmHexMapping = targetFile.replace(".asm", ".map");
         debugConfiguration.setBreakpointsAtBRK = ExtensionSettings.useBRKMnemonicsAsBreakpoints;
-        debugConfiguration.IPofSimulator = ExtensionSettings.simulatorHost;
+        debugConfiguration.HostOfSimulator = ExtensionSettings.simulatorHost;
         debugConfiguration.PortOfSimulator = ExtensionSettings.simulatorPort;
         return debugConfiguration;
     }
