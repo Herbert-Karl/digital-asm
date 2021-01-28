@@ -31,8 +31,6 @@ export class AsmDebugger extends EventEmitter {
 
     private breakpoints: AsmBreakpoint[];
 
-    private breakpointNumber = 1;
-
     private currentCodeLine = 0;
     private numberOfNonBRKBreakpoints = 0;
 
@@ -168,43 +166,6 @@ export class AsmDebugger extends EventEmitter {
         return index!==-1;
     }
 
-    // setting a breakpoint in the given line
-    // params:
-    // the codeline at which the breakpoint shall be set
-    // a boolean signaling, if the breakpoints is due to a BRK statement at this line; default value is false
-    // returns:
-    // the new breakpoint
-    public setBreakpoint(codeline: number, brk: boolean = false): AsmBreakpoint {
-        let newBreakpoint = <AsmBreakpoint> {codeline, id: this.breakpointNumber++, brk, verified: false};
-        this.verifyBreakpoint(newBreakpoint);
-        this.checkBreakpointForBRK(newBreakpoint);
-        this.breakpoints.push(newBreakpoint);
-        if(!newBreakpoint.brk) { this.numberOfNonBRKBreakpoints++; } // increase tracking number for non BRK breakpoints
-        return newBreakpoint;
-    }
-
-    // function for removing a single breakpoint
-    // params:
-    // codeline at which the breakpoint is set
-    // returns:
-    // either the breakpoint that was removed or undefined, if no breakpoint was found at the given codeline
-    public clearBreakpoint(codeline: number): AsmBreakpoint | undefined {
-        let index = this.breakpoints.findIndex(bp => bp.codeline === codeline);
-        // if no breakpoint for this line is found (index -1) we can't get and return a breakpoint
-        if(index >= 0) {
-            let breakpoint = this.breakpoints[index];
-            this.breakpoints.splice(index, 1); //removes one element in the array beginning at the position given by index, effectivly deleting the breakpoint from the array
-            if(!breakpoint.brk) { this.numberOfNonBRKBreakpoints--; } // decrease tracking number for non BRK breakpoints
-            return breakpoint;
-        }
-        return undefined;
-    }
-
-    public clearAllBreakpoints() {
-        this.breakpoints = new Array<AsmBreakpoint>();
-        this.numberOfNonBRKBreakpoints = 0;
-    }
-
     // function for creating a stacktrace / array of stackframes
     // the returned "frames" closely resemble the frames used by the Debug Adapter Protocol
     // currently we support only a single stackFrame; as such, the parameter for start- and endFrame do nothing
@@ -238,10 +199,6 @@ export class AsmDebugger extends EventEmitter {
         });
     }
 
-    public get getBreakpoints() {
-        return this.breakpoints;
-    }
-
     public setBreakpoints(value: AsmBreakpoint[]) {
         this.breakpoints = value;
         this.updateNumberOfNonBRKBreakpoints();
@@ -273,29 +230,6 @@ export class AsmDebugger extends EventEmitter {
     
     private getFirstCodeLine(): number {
         return this.mapAddrToCodeLine.get(0) || AsmDebugger.DEFAULT_FIRST_CODELINE;
-    }
-
-    private verifyBreakpoint(bp: AsmBreakpoint) {
-        this.mapAddrToCodeLine.forEach((existingCodeLine) => {
-            if(bp.codeline===existingCodeLine) {
-                bp.verified = true;
-                return;
-            }
-        });
-    }
-
-    // checks if a breakpoint is on a code line with a brk statement
-    // sets the brk attribute accordingly
-    private checkBreakpointForBRK(bp: AsmBreakpoint) {
-        // load all lines of the source file
-        const sourceCodeLines = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n');
-        // check the line, at which the breakpoint is at, for 'BRK' and if there is a ';' before it
-        let line = sourceCodeLines[bp.codeline-1];
-        let brk = line.indexOf("BRK");
-        let semicolon = line.indexOf(";");
-        if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
-            bp.brk = true;
-        }
     }
 
 }
