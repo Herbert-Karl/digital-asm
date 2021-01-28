@@ -20,6 +20,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { ExtensionLaunchRequestArguments } from './extensionLaunchRequestArguments';
 import { AsmDebugger } from './asmDebugger';
 import { AsmBreakpointFactory, IBreakpointFactory } from './asmBreakpointFactory';
+import { AsmBreakpoint } from './asmBreakpoint';
 const { Subject } = require('await-notify');
 
 // the implementation of debugging for the asm files uses the DebugSession based on the Debug Adapter Protocol
@@ -127,19 +128,17 @@ export class AsmDebugSession extends DebugSession {
     // the request contains all expected breakpoints
     // the response must return information about all actual created breakpoints
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): void {
-        // before setting the new set of breakpoints, we remove the old ones
-        this.debugger.clearAllBreakpoints();
+        let requestedBreakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
+        let createdBreakpoints = new Array<AsmBreakpoint>();
 
-        // get wanted breakpoints
-        let breakpoints = args.breakpoints || new Array<DebugProtocol.SourceBreakpoint>();
-        // set a breakpoint for every requested one
-        breakpoints.forEach(elem => {
-            this.debugger.setBreakpoint(elem.line);      
+        requestedBreakpoints.forEach(element => {
+            let newBreakpoint = (this.breakpointFactory as AsmBreakpointFactory).createBreakpoint(element.line);
+            createdBreakpoints.push(newBreakpoint);
         });
-        
+        this.debugger.setBreakpoints(createdBreakpoints);
+
         // mapping our asmBreakpoints into the DAP breakpoints
-        // for the time being, we filter out our brk statement breakpoints, because vscode expects as much breakpoints as it set and throws additional breakpoints away
-        let actualBreakpoints = this.debugger.getBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
+        let actualBreakpoints = createdBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
 
         response.body = {
             breakpoints: actualBreakpoints
