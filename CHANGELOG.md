@@ -6,7 +6,8 @@ All notable changes to the "digital-asm" extension will be documented in this fi
 
 * updated dependencies
 * internal improvements to test suite
-* internal improvements to the existing code
+* internal restructuring and improvements to the existing code
+* fixed a bug with brk statements being only recognized for breakpoint creation, if written in all caps
 
 ## 0.6.0 - 05.09.2020
 
