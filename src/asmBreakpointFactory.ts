@@ -23,10 +23,14 @@ export interface IBreakpointFactory {
 
 export class AsmBreakpointFactory implements IBreakpointFactory {
 
+    private runningBreakpointNumber: number;
+
     constructor() {
+        this.runningBreakpointNumber = 1;
     }
 
     public createBreakpoint(codeline: number): AsmBreakpoint {
+        return <AsmBreakpoint> {codeline: codeline, id: this.runningBreakpointNumber++};
     }
 
 }
