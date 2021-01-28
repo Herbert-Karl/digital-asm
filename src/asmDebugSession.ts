@@ -14,12 +14,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-import * as fs from 'fs';
 import * as path from 'path';
 import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent, TerminatedEvent, OutputEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { ExtensionLaunchRequestArguments } from './extensionLaunchRequestArguments';
 import { AsmDebugger } from './asmDebugger';
+import { AsmBreakpointFactory, IBreakpointFactory } from './asmBreakpointFactory';
 const { Subject } = require('await-notify');
 
 // the implementation of debugging for the asm files uses the DebugSession based on the Debug Adapter Protocol
@@ -30,8 +30,7 @@ export class AsmDebugSession extends DebugSession {
     private static THREAD_ID = 1; // we do not support multiple threads
 
     private debugger: AsmDebugger = new AsmDebugger();
-
-    private breakpointsOnBRKStatements: boolean = true;
+    private breakpointFactory: IBreakpointFactory | undefined = undefined;
 
     // used internaly to await/notify ourselves when the configuration is done and we can proceed with lauchning the debugger
     private configurationDone = new Subject();
@@ -97,11 +96,10 @@ export class AsmDebugSession extends DebugSession {
     // our needed arguments are part of our extension for the LaunchRequestArguments
     // sets up our AsmDebugger
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
+        this.breakpointFactory = new AsmBreakpointFactory(args.pathToAsmFile, args.pathToAsmHexMapping);
         // passing the configuration into our asmDebugger to make it actually usable
         this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.HostOfSimulator, args.PortOfSimulator);
-        this.breakpointsOnBRKStatements = args.setBreakpointsAtBRK;
-
-        if(this.breakpointsOnBRKStatements) {
+        if(args.setBreakpointsAtBRK) {
             this.setBreakpointsAtBRK();
         }
 
@@ -235,26 +233,17 @@ export class AsmDebugSession extends DebugSession {
         return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath));
     }
 
-    // internal function for checking the source code for BRK statements and setting breakpoints for them
     private setBreakpointsAtBRK() {
-        // load all lines of the source file
-        let sourceCodeLines = fs.readFileSync(this.debugger.getPathToAsmFile, 'utf8').split('\n');
-        // check every line for 'BRK' and if there is a ';' before it
-        sourceCodeLines.forEach((line, index) => {
-            let brk = line.indexOf("BRK");
-            let semicolon = line.indexOf(";");
-            if(brk!==-1 && (semicolon===-1 || brk<semicolon)) {
-                // create a breakpoint for this line; adjusting 0 based index to 1 based code lines
-                let newBreakpoint = this.debugger.setBreakpoint(index+1, true);
-                // signaling the editor about the additional breakpoint created
-                this.sendEvent(
-                    new BreakpointEvent(
-                        'new', 
-                        <Breakpoint>{id: newBreakpoint.id, line: newBreakpoint.codeline, verified: newBreakpoint.verified, source: this.createSource(this.debugger.getPathToAsmFile)}
-                    )
-                );
-            }
-        });    
+        let brkMnemonicBasedBreakpoints = (this.breakpointFactory as AsmBreakpointFactory).createBreakpointForEachBrkMnemonic();
+        brkMnemonicBasedBreakpoints.forEach(breakpoint => {
+            this.sendEvent(
+                new BreakpointEvent(
+                    'new', 
+                    <Breakpoint>{id: breakpoint.id, line: breakpoint.codeline, verified: breakpoint.verified, source: this.createSource(this.debugger.getPathToAsmFile)}
+                )
+            );
+        });
+        this.debugger.setBreakpoints(brkMnemonicBasedBreakpoints);    
     }
 
 }

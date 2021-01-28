@@ -30,6 +30,7 @@ export class AsmDebugger extends EventEmitter {
     private mapAddrToCodeLine: Map<number, number>;
 
     private breakpoints: AsmBreakpoint[];
+
     private breakpointNumber = 1;
 
     private currentCodeLine = 0;
@@ -239,6 +240,10 @@ export class AsmDebugger extends EventEmitter {
 
     public get getBreakpoints() {
         return this.breakpoints;
+    }
+
+    public setBreakpoints(value: AsmBreakpoint[]) {
+        this.breakpoints = value;
     }
 
     public get getPathToAsmFile() {
