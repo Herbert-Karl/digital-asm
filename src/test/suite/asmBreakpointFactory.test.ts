@@ -21,6 +21,11 @@ suite('AsmBreakpointFactory Test Suite', () => {
 		vscode.window.showInformationMessage('Finished tests for AsmBreakpointFactory!');
 	});
 
+	test('Create breakpointFactory without valid paths', (done) => {
+		assert.throws(() => {let _ = new AsmBreakpointFactory("", "");});
+		done(); 
+	});
+
 	test('Create a simple breakpoint', (done) => {
 		let codelineFromTestFile = 13;
 		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineFromTestFile, id: 1};
@@ -34,6 +39,15 @@ suite('AsmBreakpointFactory Test Suite', () => {
 		let breakpointFactory = new AsmBreakpointFactory(pathToAsmFileForTest, pathToCorrespondingMapFileForTest);
 		return breakpointFactory.createBreakpoint(codeline);
 	}
+
+	test('Create a breakpoint on a codeline which isn\'t executed', (done) => {
+		let codelineFromTestFile = 32;
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineFromTestFile, id: 1, verified: false};
+		let createdBreakpoint = createBreakpoint(codelineFromTestFile);
+		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
+		assert.strictEqual(createdBreakpoint.verified, expectedBreakpoint.verified);
+		done();
+	});
 
 	test('Create a breakpoint on a codeline which would be actually executed', (done) => {
 		let codelineFromTestFile = 24;
@@ -50,6 +64,35 @@ suite('AsmBreakpointFactory Test Suite', () => {
 		let createdBreakpoint = createBreakpoint(codelineWithBRKMnemonicFromTestFile);
 		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
 		assert.strictEqual(createdBreakpoint.brk, expectedBreakpoint.brk);
+		done();
+	});
+
+	test('Create a breakpoint not on a BRK Mnemonic', (done) => {
+		let codelineWithBRKMnemonicFromTestFile = 69;
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineWithBRKMnemonicFromTestFile, id: 1, brk: false };
+		let createdBreakpoint = createBreakpoint(codelineWithBRKMnemonicFromTestFile);
+		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
+		assert.strictEqual(createdBreakpoint.brk, expectedBreakpoint.brk);
+		done();
+	});
+
+	test('Check if breakpoint ids are each different', (done) => {
+		let breakpointFactory = new AsmBreakpointFactory(pathToAsmFileForTest, pathToCorrespondingMapFileForTest);
+		let createdBreakpointIDs = new Set<number>(); 
+		for (let i = 0; i < 10000; i++) {
+			let breakpoint = breakpointFactory.createBreakpoint(1);
+			if(createdBreakpointIDs.has(breakpoint.id)) {
+				assert.fail("Duplicate Breakpoint ID detected!");
+			} else {
+				createdBreakpointIDs.add(breakpoint.id);
+			}
+		}
+		done(); 
+	});
+
+	test('Create a breakpoint on a not existing codeline', (done) => {
+		let codelineNotExistingInAsmFile = 42000;
+		assert.throws(() => {let _ = createBreakpoint(codelineNotExistingInAsmFile);});
 		done();
 	});
 
