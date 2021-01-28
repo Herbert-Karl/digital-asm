@@ -96,12 +96,12 @@ suite('Extension Test Suite', () => {
 		await assert.doesNotReject(async () => await vscode.commands.executeCommand('digital-asm.parse-asm', asmTestFile));
 
 		// getting the content of the files
-		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedExampleFile.fsPath, fileEncoding));
-		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexExampleFile.fsPath, fileEncoding));
-		let listingContent = standardizeLineEnding(fs.readFileSync(createdExampleListingFile.fsPath, fileEncoding));
-		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstExampleFile.fsPath, fileEncoding));
-		let mappingContent = standardizeLineEnding(fs.readFileSync(createdExampleMappingFile.fsPath, fileEncoding));
-		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapExampleFile.fsPath, fileEncoding));
+		let parsedContent = standardizeLineEnding(fs.readFileSync(parsedTestFile.fsPath, fileEncoding));
+		const expectedHexContent = standardizeLineEnding(fs.readFileSync(hexTestFile.fsPath, fileEncoding));
+		let listingContent = standardizeLineEnding(fs.readFileSync(createdTestListingFile.fsPath, fileEncoding));
+		const expectedLstContent = standardizeLineEnding(fs.readFileSync(lstTestFile.fsPath, fileEncoding));
+		let mappingContent = standardizeLineEnding(fs.readFileSync(createdTestMappingFile.fsPath, fileEncoding));
+		const expectedMapContent = standardizeLineEnding(fs.readFileSync(mapTestFile.fsPath, fileEncoding));
 
 		assert.deepStrictEqual(parsedContent, expectedHexContent);
 		assert.deepStrictEqual(listingContent, expectedLstContent);
