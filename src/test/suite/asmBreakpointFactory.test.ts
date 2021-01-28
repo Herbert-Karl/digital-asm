@@ -20,21 +20,23 @@ suite('AsmBreakpointFactory Test Suite', () => {
 		vscode.window.showInformationMessage('Finished tests for AsmBreakpointFactory!');
 	});
 
-	test('Create a breakpoint on a codeline with no content', (done) => {
-		let codelineForTest = 13;
-		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineForTest, id: 1, verified: false };
+	test('Create a simple breakpoint', (done) => {
+		let codelineFromTestFile = 13;
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineFromTestFile, id: 1};
 		let breakpointFactory = new AsmBreakpointFactory(pathToCorrespondingMapFileForTest);
-		let createdBreakpoint = breakpointFactory.createBreakpoint(codelineForTest);
-		assert.deepStrictEqual(createdBreakpoint, expectedBreakpoint);
+		let createdBreakpoint = breakpointFactory.createBreakpoint(codelineFromTestFile);
+		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
+		assert.strictEqual(createdBreakpoint.id, expectedBreakpoint.id);
 		done();
 	});
 
 	test('Create a breakpoint on a codeline which would be actually executed', (done) => {
-		let codelineForTest = 24;
-		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineForTest, id: 1, verified: true };
+		let codelineFromTestFile = 24;
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineFromTestFile, id: 1, verified: true};
 		let breakpointFactory = new AsmBreakpointFactory(pathToCorrespondingMapFileForTest);
-		let createdBreakpoint = breakpointFactory.createBreakpoint(codelineForTest);
-		assert.deepStrictEqual(createdBreakpoint, expectedBreakpoint);
+		let createdBreakpoint = breakpointFactory.createBreakpoint(codelineFromTestFile);
+		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
+		assert.strictEqual(createdBreakpoint.verified, expectedBreakpoint.verified);
 		done();
 	});
 
