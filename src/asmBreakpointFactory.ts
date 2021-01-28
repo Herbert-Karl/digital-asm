@@ -14,13 +14,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-export interface IBreakpoint {
-    codeline: number;
+
+import { AsmBreakpoint, IBreakpoint } from "./asmBreakpoint";
+
+export interface IBreakpointFactory {
+    createBreakpoint(codeline:number): IBreakpoint;
 }
 
-export interface AsmBreakpoint extends IBreakpoint {
-    codeline: number;
-    id: number;
-    brk: boolean;
-    verified: boolean;
+export class AsmBreakpointFactory implements IBreakpointFactory {
+
+    constructor() {
+    }
+
+    public createBreakpoint(codeline: number): AsmBreakpoint {
+    }
+
 }
