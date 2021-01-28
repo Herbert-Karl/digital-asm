@@ -26,11 +26,18 @@ export class AsmBreakpointFactory implements IBreakpointFactory {
 
     private runningBreakpointNumber: number;
 
+    private sourceCodelines: Array<string>;
     private mapAddrToCodeline: Map<number, number>; // maps executable lines of the output hex file to the corresponding codelines of the asm file
 
-    constructor(pathToMapFile: string) {
+    constructor(pathToAsmFile: string, pathToCorrespondingMapFile: string) {
         this.runningBreakpointNumber = 1;
-        this.mapAddrToCodeline = this.loadAddrToCodelineMappingFromFile(pathToMapFile);
+        this.sourceCodelines = this.loadSourceCodelinesFromFile(pathToAsmFile);
+        this.mapAddrToCodeline = this.loadAddrToCodelineMappingFromFile(pathToCorrespondingMapFile);
+    }
+
+    private loadSourceCodelinesFromFile(pathToAsmFile: string): Array<string> {
+        let sourceCodelines = fs.readFileSync(pathToAsmFile, 'utf8').split('\n');
+        return sourceCodelines;
     }
 
     private loadAddrToCodelineMappingFromFile(pathToMapFile: string): Map<number, number> {
@@ -46,6 +53,7 @@ export class AsmBreakpointFactory implements IBreakpointFactory {
     public createBreakpoint(codeline: number): AsmBreakpoint {
         let newBreakpoint = this.createBaseOfBreakpoint(codeline);
         newBreakpoint = this.verifyIfCodelineIsExecutableLine(newBreakpoint);
+        newBreakpoint = this.checkIfCodelineContainsBrkMnemonic(newBreakpoint);
         return newBreakpoint;
     }
 
@@ -56,12 +64,38 @@ export class AsmBreakpointFactory implements IBreakpointFactory {
     private verifyIfCodelineIsExecutableLine(breakpoint: AsmBreakpoint): AsmBreakpoint {
         let isCodelinePartOfExecutable = false;
         this.mapAddrToCodeline.forEach(actualCodeline => {
-            if (actualCodeline===breakpoint.codeline) {
+            if (actualCodeline === breakpoint.codeline) {
                 isCodelinePartOfExecutable = true;
             }
         });
         breakpoint.verified = isCodelinePartOfExecutable;
         return breakpoint;
+    }
+
+    private checkIfCodelineContainsBrkMnemonic(breakpoint: AsmBreakpoint): AsmBreakpoint {
+        const ONE_BASED_SOURCE_TO_ZERO_BASED_ARRAY_OFFSET = 1;
+        let sourceCodeline = this.sourceCodelines[breakpoint.codeline-ONE_BASED_SOURCE_TO_ZERO_BASED_ARRAY_OFFSET];
+        breakpoint.brk = this.doesSourceCodelineContainBrkMnemonicBeforeSemicolon(sourceCodeline);
+        return breakpoint;
+    }
+
+    private doesSourceCodelineContainBrkMnemonicBeforeSemicolon(sourceCodeline: string): boolean {
+        let indexOfBrkSubstring = this.getIndexOfBrkMnemonic(sourceCodeline);
+        let indexOfSemicolon = this.getIndexOfSemicolon(sourceCodeline);
+        return this.isBrkMnemonicBeforeSemicolon(indexOfBrkSubstring, indexOfSemicolon);
+    }
+
+    private getIndexOfBrkMnemonic(sourceCodeline: string): number {
+        let caseInsensitiveSourceCodeline = sourceCodeline.toLowerCase();
+        return caseInsensitiveSourceCodeline.indexOf("brk");
+    }
+
+    private getIndexOfSemicolon(sourceCodeline: string): number {
+        return sourceCodeline.indexOf(";");
+    }
+
+    private isBrkMnemonicBeforeSemicolon(indexOfBrkSubstring: number, indexOfSemicolon: number): boolean {
+        return indexOfBrkSubstring!==-1 && (indexOfSemicolon===-1 || indexOfBrkSubstring<indexOfSemicolon);
     }
 
 }
