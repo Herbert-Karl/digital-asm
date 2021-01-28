@@ -50,6 +50,18 @@ export class AsmBreakpointFactory implements IBreakpointFactory {
         return mapAddrToCodeline;
     }
 
+    public createBreakpointForEachBrkMnemonic(): Array<AsmBreakpoint> {
+        const ZERO_BASED_ARRAY_TO_ONE_BASED_SOURCE_OFFSET = 1;
+        let newBrkMnemonicBreakpoints = new Array<AsmBreakpoint>();
+        this.sourceCodelines.forEach((sourceCodeline, index) => {
+            if(this.doesSourceCodelineContainBrkMnemonicBeforeSemicolon(sourceCodeline)) {
+                let newBreakpoint = this.createBreakpoint(index+ZERO_BASED_ARRAY_TO_ONE_BASED_SOURCE_OFFSET);
+                newBrkMnemonicBreakpoints.push(newBreakpoint);
+            }
+        });
+        return newBrkMnemonicBreakpoints;
+    }
+
     public createBreakpoint(codeline: number): AsmBreakpoint {
         let newBreakpoint = this.createBaseOfBreakpoint(codeline);
         newBreakpoint = this.verifyIfCodelineIsExecutableLine(newBreakpoint);

@@ -96,4 +96,12 @@ suite('AsmBreakpointFactory Test Suite', () => {
 		done();
 	});
 
+	test('Create breakpoints for each BRK Mnemonic', (done) => {
+		let expectedBreakpoints: Array<AsmBreakpoint> = [{ codeline: 295, id: 1, verified: true, brk: true }, { codeline: 310, id: 2, verified: true, brk: true }];
+		let breakpointFactory = new AsmBreakpointFactory(pathToAsmFileForTest, pathToCorrespondingMapFileForTest);
+		let actualBreakpoints = breakpointFactory.createBreakpointForEachBrkMnemonic();
+		assert.deepStrictEqual(actualBreakpoints, expectedBreakpoints);
+		done();
+	});
+
 });
