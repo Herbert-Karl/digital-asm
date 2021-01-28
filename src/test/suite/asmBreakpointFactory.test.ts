@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as net from 'net';
 import { after, before } from 'mocha';
 import * as path from 'path';
 
@@ -10,7 +9,9 @@ import { AsmBreakpoint } from '../../asmBreakpoint';
 import { AsmBreakpointFactory } from '../../asmBreakpointFactory';
 
 suite('AsmBreakpointFactory Test Suite', () => {
-	
+
+	const testFolderLocation = '/../../../src/test/examples/';
+	let pathToCorrespondingMapFileForTest = path.join(__dirname + testFolderLocation + 'test_mapping.map');
 
 	before(() => {
 		vscode.window.showInformationMessage('Start tests for AsmBreakpointFactory.');
@@ -19,10 +20,19 @@ suite('AsmBreakpointFactory Test Suite', () => {
 		vscode.window.showInformationMessage('Finished tests for AsmBreakpointFactory!');
 	});
 
-	test('Create a AsmBreakpoint', (done) => {
+	test('Create a breakpoint on a codeline with no content', (done) => {
 		let codelineForTest = 13;
-		let expectedBreakpoint = <AsmBreakpoint> {codeline: codelineForTest, id: 1};
-		let breakpointFactory = new AsmBreakpointFactory();
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineForTest, id: 1, verified: false };
+		let breakpointFactory = new AsmBreakpointFactory(pathToCorrespondingMapFileForTest);
+		let createdBreakpoint = breakpointFactory.createBreakpoint(codelineForTest);
+		assert.deepStrictEqual(createdBreakpoint, expectedBreakpoint);
+		done();
+	});
+
+	test('Create a breakpoint on a codeline which would be actually executed', (done) => {
+		let codelineForTest = 24;
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineForTest, id: 1, verified: true };
+		let breakpointFactory = new AsmBreakpointFactory(pathToCorrespondingMapFileForTest);
 		let createdBreakpoint = breakpointFactory.createBreakpoint(codelineForTest);
 		assert.deepStrictEqual(createdBreakpoint, expectedBreakpoint);
 		done();
