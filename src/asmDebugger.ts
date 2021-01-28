@@ -244,10 +244,20 @@ export class AsmDebugger extends EventEmitter {
 
     public setBreakpoints(value: AsmBreakpoint[]) {
         this.breakpoints = value;
+        this.updateNumberOfNonBRKBreakpoints();
     }
 
     public get getPathToAsmFile() {
         return this.pathToAsmFile;
+    }
+
+    private updateNumberOfNonBRKBreakpoints() {
+        this.numberOfNonBRKBreakpoints = 0;
+        this.breakpoints.forEach(breakpoint => {
+            if(!breakpoint.brk) {
+                this.numberOfNonBRKBreakpoints++;
+            }
+        });
     }
 
     // helper function
