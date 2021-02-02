@@ -87,12 +87,10 @@ export class AsmDebugger extends EventEmitter {
             });
     }
 
-    public continue() {
-        this.executeTillBreakpoint();
-    }
-
-    public step() {
-        this.executeStepCommand();
+    private static DEFAULT_FIRST_CODELINE = 1;
+    
+    private getFirstCodeLine(): number {
+        return this.mapAddrToCodeLine.get(0) || AsmDebugger.DEFAULT_FIRST_CODELINE;
     }
 
     public stop() {
@@ -105,6 +103,10 @@ export class AsmDebugger extends EventEmitter {
             });
     }
 
+    public step() {
+        this.executeStepCommand();
+    }
+
     private executeStepCommand() {
         this.remoteInterface.step()
             .then((address) => {
@@ -114,6 +116,14 @@ export class AsmDebugger extends EventEmitter {
             .catch((err) => {
                 this.sendEvent('error', err);
             });
+    }
+
+    private updateCurrentCodeline(addr: number) {
+        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
+    }
+
+    public continue() {
+        this.executeTillBreakpoint();
     }
 
     private async executeTillBreakpoint() {
@@ -157,10 +167,6 @@ export class AsmDebugger extends EventEmitter {
         }
     }
 
-    private updateCurrentCodeline(addr: number) {
-        this.currentCodeLine = this.mapAddrToCodeLine.get(addr) || this.currentCodeLine;
-    }
-
     private isBreakpointAtCurrentCodeLine(): boolean {
         let index = this.breakpoints.findIndex(breakpoint => breakpoint.codeline === this.currentCodeLine);
         return index!==-1;
@@ -186,9 +192,14 @@ export class AsmDebugger extends EventEmitter {
             name: path.basename(this.pathToAsmFile),
             source: this.pathToAsmFile,
             line: this.currentCodeLine,
-            column: this.getColumn(this.currentCodeLine),
+            column: this.getFirstNonWhitespacePosition(this.currentCodeLine),
         };
         return stackFrame;
+    }
+
+    private getFirstNonWhitespacePosition(referencedCodeline: number): number {
+        let codeLine = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n')[referencedCodeline];
+        return codeLine.indexOf(codeLine.trimLeft());
     }
 
     // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint, pause
@@ -204,10 +215,6 @@ export class AsmDebugger extends EventEmitter {
         this.updateNumberOfNonBRKBreakpoints();
     }
 
-    public get getPathToAsmFile() {
-        return this.pathToAsmFile;
-    }
-
     private updateNumberOfNonBRKBreakpoints() {
         this.numberOfNonBRKBreakpoints = 0;
         this.breakpoints.forEach(breakpoint => {
@@ -217,19 +224,8 @@ export class AsmDebugger extends EventEmitter {
         });
     }
 
-    // helper function
-    // returns the index of the first non-whitespace char in the codeLine referenced by the given line number
-    // params:
-    // number of the codeLine
-    private getColumn(line: number): number {
-        let codeLine = fs.readFileSync(this.pathToAsmFile, 'utf8').split('\n')[line]; // reads in the file as a single string, splits it into an array and then only takes the referenced line 
-        return codeLine.indexOf(codeLine.trimLeft());
-    }
-
-    private static DEFAULT_FIRST_CODELINE = 1;
-    
-    private getFirstCodeLine(): number {
-        return this.mapAddrToCodeLine.get(0) || AsmDebugger.DEFAULT_FIRST_CODELINE;
+    public get getPathToAsmFile() {
+        return this.pathToAsmFile;
     }
 
 }
