@@ -138,7 +138,7 @@ export class AsmDebugSession extends DebugSession {
         this.debugger.setBreakpoints(createdBreakpoints);
 
         // mapping our asmBreakpoints into the DAP breakpoints
-        let actualBreakpoints = createdBreakpoints.map(bp => <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: args.source});
+        let actualBreakpoints = createdBreakpoints.map(bp => this.transformBreakpoint(bp));
 
         response.body = {
             breakpoints: actualBreakpoints
@@ -236,13 +236,14 @@ export class AsmDebugSession extends DebugSession {
         let brkMnemonicBasedBreakpoints = (this.breakpointFactory as AsmBreakpointFactory).createBreakpointForEachBrkMnemonic();
         brkMnemonicBasedBreakpoints.forEach(breakpoint => {
             this.sendEvent(
-                new BreakpointEvent(
-                    'new', 
-                    <Breakpoint>{id: breakpoint.id, line: breakpoint.codeline, verified: breakpoint.verified, source: this.createSource(this.debugger.getPathToAsmFile)}
-                )
+                new BreakpointEvent('new', this.transformBreakpoint(breakpoint))
             );
         });
         this.debugger.setBreakpoints(brkMnemonicBasedBreakpoints);    
+    }
+
+    private transformBreakpoint(bp: AsmBreakpoint): Breakpoint {
+        return <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: this.createSource(this.debugger.getPathToAsmFile)};
     }
 
 }
