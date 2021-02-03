@@ -89,7 +89,6 @@ export class RemoteInterface {
 
         return new Promise<number>((resolve, reject) => {
                        
-            // when the socket is connected, we write our command
             socket.on('connect', () => {
                 if(args!=="") {
                     command = command+":"+args;
@@ -102,16 +101,14 @@ export class RemoteInterface {
                 }
             });
 
-            // when the socket gets the data, we end the socket connection and return the data from the connection
             socket.on('data', (data) => {
                 socket.end();
-                let response = data.toString('utf8');
-                // checking the returned data from the simulator for an okay signal
-                if(!(response.substr(2,2)==="ok" || response.substr(2,3)==="ok:")) {
-                    reject(new Error("Error received from simulator: " + response));
+                try {
+                    let responseNumber = RemoteInterface.convertSocketResponse(data);
+                    resolve(responseNumber);
+                } catch (error) {
+                    reject(error);
                 }
-                // convert the response from the digital simulator from string into the contained number and finish (resolve) the Promise
-                resolve(RemoteInterface.getAddress(response));
             });
 
             socket.on('error', (err) => {
@@ -140,6 +137,18 @@ export class RemoteInterface {
         let high = len & 65280; // 0b 1111 1111 0000 0000
         let low = len & 255; // 0b 0000 0000 1111 1111
         return Uint8Array.from([high, low]);
+    }
+
+    private static convertSocketResponse(response: Buffer): number {
+        let responseString = response.toString('utf8');
+        if(!RemoteInterface.isPositiveResponse(responseString)) {
+            throw new Error("Error received from simulator: " + responseString);
+        }
+        return RemoteInterface.getAddress(responseString);
+    }
+
+    private static isPositiveResponse(response: string): boolean {
+        return response.substr(2,2)==="ok" || response.substr(2,3)==="ok:";
     }
 
     // function for converting the response string from digital, which contains the current address, into a usable number
