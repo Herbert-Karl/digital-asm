@@ -11,7 +11,7 @@
         "url": "https://github.com/Herbert-Karl/digital-asm.git"
     },
     "engines": {
-        "vscode": "^1.43.0"
+        "vscode": "^1.52.0"
     },
     "license": "GPL-3.0-or-later",
     "categories": [
