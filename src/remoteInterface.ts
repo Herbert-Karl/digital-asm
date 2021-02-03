@@ -35,7 +35,7 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async start(pathToHexFile: string): Promise<number> {
+    public start(pathToHexFile: string): Promise<number> {
         return this.sendRequest("start", pathToHexFile);
     }
 
@@ -45,7 +45,7 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async debug(pathToHexFile: string): Promise<number> {
+    public debug(pathToHexFile: string): Promise<number> {
         return this.sendRequest("debug", pathToHexFile);
     }
 
@@ -54,7 +54,7 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async run(): Promise<number> {
+    public run(): Promise<number> {
         return this.sendRequest("run", "");
     }
 
@@ -62,7 +62,7 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async stop(): Promise<number> {
+    public stop(): Promise<number> {
         return this.sendRequest("stop", "");
     }
 
@@ -70,7 +70,7 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async step(): Promise<number> {
+    public step(): Promise<number> {
         return this.sendRequest("step", "");
     }
 
@@ -81,7 +81,7 @@ export class RemoteInterface {
     // returns:
     // a Promise which either resolves to a number that is the current address in the program hex code
     // or rejects into an error. the error might come from the simulator itself or from the tcp connection
-    private async sendRequest(command: string, args: string): Promise<number> {
+    private sendRequest(command: string, args: string): Promise<number> {
         let socket = new net.Socket();
         socket.setDefaultEncoding("utf8");
         socket.setNoDelay(true);
