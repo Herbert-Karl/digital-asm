@@ -60,19 +60,19 @@ suite('AsmBreakpointFactory Test Suite', () => {
 
 	test('Create a breakpoint on a BRK Mnemonic', (done) => {
 		let codelineWithBRKMnemonicFromTestFile = 295;
-		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineWithBRKMnemonicFromTestFile, id: 1, brk: true };
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineWithBRKMnemonicFromTestFile, id: 1, brkMnemomic: true };
 		let createdBreakpoint = createBreakpoint(codelineWithBRKMnemonicFromTestFile);
 		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
-		assert.strictEqual(createdBreakpoint.brk, expectedBreakpoint.brk);
+		assert.strictEqual(createdBreakpoint.brkMnemomic, expectedBreakpoint.brkMnemomic);
 		done();
 	});
 
 	test('Create a breakpoint not on a BRK Mnemonic', (done) => {
 		let codelineWithBRKMnemonicFromTestFile = 69;
-		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineWithBRKMnemonicFromTestFile, id: 1, brk: false };
+		let expectedBreakpoint = <AsmBreakpoint>{ codeline: codelineWithBRKMnemonicFromTestFile, id: 1, brkMnemomic: false };
 		let createdBreakpoint = createBreakpoint(codelineWithBRKMnemonicFromTestFile);
 		assert.strictEqual(createdBreakpoint.codeline, expectedBreakpoint.codeline);
-		assert.strictEqual(createdBreakpoint.brk, expectedBreakpoint.brk);
+		assert.strictEqual(createdBreakpoint.brkMnemomic, expectedBreakpoint.brkMnemomic);
 		done();
 	});
 
@@ -97,7 +97,7 @@ suite('AsmBreakpointFactory Test Suite', () => {
 	});
 
 	test('Create breakpoints for each BRK Mnemonic', (done) => {
-		let expectedBreakpoints: Array<AsmBreakpoint> = [{ codeline: 295, id: 1, verified: true, brk: true }, { codeline: 310, id: 2, verified: true, brk: true }];
+		let expectedBreakpoints: Array<AsmBreakpoint> = [{ codeline: 295, id: 1, verified: true, brkMnemomic: true }, { codeline: 310, id: 2, verified: true, brkMnemomic: true }];
 		let breakpointFactory = new AsmBreakpointFactory(pathToAsmFileForTest, pathToCorrespondingMapFileForTest);
 		let actualBreakpoints = breakpointFactory.createBreakpointForEachBrkMnemonic();
 		assert.deepStrictEqual(actualBreakpoints, expectedBreakpoints);

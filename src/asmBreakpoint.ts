@@ -21,6 +21,6 @@ export interface IBreakpoint {
 export interface AsmBreakpoint extends IBreakpoint {
     codeline: number;
     id: number;
-    brk: boolean;
+    brkMnemomic: boolean;
     verified: boolean;
 }

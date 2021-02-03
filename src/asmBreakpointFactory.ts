@@ -87,7 +87,7 @@ export class AsmBreakpointFactory implements IBreakpointFactory {
     private checkIfCodelineContainsBrkMnemonic(breakpoint: AsmBreakpoint): AsmBreakpoint {
         const ONE_BASED_SOURCE_TO_ZERO_BASED_ARRAY_OFFSET = 1;
         let sourceCodeline = this.sourceCodelines[breakpoint.codeline-ONE_BASED_SOURCE_TO_ZERO_BASED_ARRAY_OFFSET];
-        breakpoint.brk = this.doesSourceCodelineContainBrkMnemonicBeforeSemicolon(sourceCodeline);
+        breakpoint.brkMnemomic = this.doesSourceCodelineContainBrkMnemonicBeforeSemicolon(sourceCodeline);
         return breakpoint;
     }
 

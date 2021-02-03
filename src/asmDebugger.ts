@@ -218,7 +218,7 @@ export class AsmDebugger extends EventEmitter {
     private updateNumberOfNonBRKBreakpoints() {
         this.numberOfNonBRKBreakpoints = 0;
         this.breakpoints.forEach(breakpoint => {
-            if(!breakpoint.brk) {
+            if(!breakpoint.brkMnemomic) {
                 this.numberOfNonBRKBreakpoints++;
             }
         });
