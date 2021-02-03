@@ -2,7 +2,7 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
-## x.y.z - tbd
+## 0.7.0 - 03.02.2021
 
 * updated dependencies
 * internal improvements to test suite
