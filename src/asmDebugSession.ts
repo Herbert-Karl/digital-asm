@@ -92,8 +92,7 @@ export class AsmDebugSession extends DebugSession {
 		this.configurationDone.notify();
 	}
 
-    // override of the default implementation of the function
-    // function for starting the debuggee
+    // function for starting the debugger
     // our needed arguments are part of our extension for the LaunchRequestArguments
     // sets up our AsmDebugger
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
@@ -111,10 +110,27 @@ export class AsmDebugSession extends DebugSession {
         // timeout given in millliseconds
         await this.configurationDone.wait(10000);
 
-        // launching/starting
         this.debugger.start(args.stopOnEntry);
 
         this.sendResponse(response); // response is just an acknowledgement
+    }
+
+    private setBreakpointsAtBRK() {
+        let brkMnemonicBasedBreakpoints = (this.breakpointFactory as AsmBreakpointFactory).createBreakpointForEachBrkMnemonic();
+        brkMnemonicBasedBreakpoints.forEach(breakpoint => {
+            this.sendEvent(
+                new BreakpointEvent('new', this.transformBreakpoint(breakpoint))
+            );
+        });
+        this.debugger.setBreakpoints(brkMnemonicBasedBreakpoints);    
+    }
+
+    private transformBreakpoint(bp: AsmBreakpoint): Breakpoint {
+        return <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: this.createSource(this.debugger.getPathToAsmFile)};
+    }
+
+    private createSource(filePath: string): Source {
+        return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath));
     }
  
     // associated with the capability "supportsRestartRequest"
@@ -137,7 +153,6 @@ export class AsmDebugSession extends DebugSession {
         });
         this.debugger.setBreakpoints(createdBreakpoints);
 
-        // mapping our asmBreakpoints into the DAP breakpoints
         let actualBreakpoints = createdBreakpoints.map(bp => this.transformBreakpoint(bp));
 
         response.body = {
@@ -154,36 +169,30 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
     }
     
-    // override of the default implementation of the function
     // running the program for one step
-    // the response is only an acknowledgement, so no content is required
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request) : void {
         this.debugger.step();
-        this.sendResponse(response);
+        this.sendResponse(response); // the response is only an acknowledgement, so no content is required
 	}
 
-    // override of the default implementation of the function
     // request for stepping into a function if possible
     // because it isn't feasible for our language, we make one step instead
-    // the response is empty/ an acknowledgement
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request) : void {
 		this.debugger.step();
-        this.sendResponse(response);
+        this.sendResponse(response); // the response is only an acknowledgement
 	}
     
-    // override of the default implementation of the function
     // request for stepping out off a function if possible
     // because it isn't feasible for our language, we make one step instead
-    // the response is empty/ an acknowledgement
     // expects:
     // debugger was succesfully constructed via launchRequest
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request) : void {
         this.debugger.step();
-        this.sendResponse(response);
+        this.sendResponse(response); // the response is only an acknowledgement
 	}
 
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments, request?: DebugProtocol.Request) : void {
@@ -191,7 +200,6 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response); // the response is only an acknowledgement
 	}
     
-    // override of the default implementation of the function
     // request for all threads in the current debugger state
     // we support/use only one thread
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
@@ -203,7 +211,6 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response);
 	}
     
-    // override of the default implementation of the function
     // request for the stackFrames of the referenced thread
     // the stackFrame contains the information, which line the program is currently at
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request): void {
@@ -225,25 +232,7 @@ export class AsmDebugSession extends DebugSession {
     /*
         requests for Scopes, Variables, Attatch, Evaluate and Source aren't implemented (empty base implementation used)
         because we do not support these things
-        but does things can't be defined via the capabilities, so we can't explicitly forbid such requests
+        but those things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
-
-    private createSource(filePath: string): Source {
-        return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath));
-    }
-
-    private setBreakpointsAtBRK() {
-        let brkMnemonicBasedBreakpoints = (this.breakpointFactory as AsmBreakpointFactory).createBreakpointForEachBrkMnemonic();
-        brkMnemonicBasedBreakpoints.forEach(breakpoint => {
-            this.sendEvent(
-                new BreakpointEvent('new', this.transformBreakpoint(breakpoint))
-            );
-        });
-        this.debugger.setBreakpoints(brkMnemonicBasedBreakpoints);    
-    }
-
-    private transformBreakpoint(bp: AsmBreakpoint): Breakpoint {
-        return <Breakpoint>{id: bp.id, line: bp.codeline, verified: bp.verified, source: this.createSource(this.debugger.getPathToAsmFile)};
-    }
 
 }
