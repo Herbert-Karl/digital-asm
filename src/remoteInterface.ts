@@ -35,8 +35,8 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async start(pathToHex: string): Promise<number> {
-        return this.sendRequest("start", pathToHex);
+    public async start(pathToHexFile: string): Promise<number> {
+        return this.sendRequest("start", pathToHexFile);
     }
 
     // loading the program but does not begin running it
@@ -45,8 +45,8 @@ export class RemoteInterface {
     // returns:
     // passes through a promise waiting for a response from executing the command in the digital simulator
     // the resolved number is the current program address (or -1 if there was only a confomrmation response); may reject due to errors
-    public async debug(pathToHex: string): Promise<number> {
-        return this.sendRequest("debug", pathToHex);
+    public async debug(pathToHexFile: string): Promise<number> {
+        return this.sendRequest("debug", pathToHexFile);
     }
 
     // runs the program
@@ -94,18 +94,12 @@ export class RemoteInterface {
                 if(args!=="") {
                     command = command+":"+args;
                 }
-        
-                // this detour before writing to socket is needed because of a specialty of the DataOutputStream/DataInputStream used in the java program
-                // we encode our command into a corresponding array of utf-8 codepoints
-                let convertedCommand = new TextEncoder().encode(command);
-                let length = RemoteInterface.getUTF8ByteLength(convertedCommand);
-                // we add the length of the command infront of the command before writing,
-                // because the simulator on the other end needs/excepts this information 
-                let message = new Uint8Array(length.length+convertedCommand.length);
-                message.set(length);
-                message.set(convertedCommand, length.length);
-
-                socket.write(message);
+                try {
+                    let message = RemoteInterface.createSocketMessage(command);
+                    socket.write(message);
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             // when the socket gets the data, we end the socket connection and return the data from the connection
@@ -127,15 +121,24 @@ export class RemoteInterface {
         });
     }
 
-    // function calculating the length of the given Uint8Array (representing a string) and returning it as a two elements Uint8Array
-    // expects:
-    // length of the given array does not exceed 2^16
+    private static createSocketMessage(command: string): Uint8Array {
+        let convertedCommand = new TextEncoder().encode(command);
+        // the DataOutputStream/DataInputStream used in java-based simulator has a special need:
+        // the length of the data send/to be send, prefixed to the data itself as two bytes 
+        let length = RemoteInterface.getUTF8ByteLength(convertedCommand);
+        let message = new Uint8Array(length.length+convertedCommand.length);
+        message.set(length);
+        message.set(convertedCommand, length.length);
+        return message;
+    }
+
     private static getUTF8ByteLength(command: Uint8Array): Uint8Array {
-        let len = command.length; 
-        // we seperate the upper and lower byte
-        let high = len & 65280;
-        let low = len & 255;
-        // and create a Uint8Array containing these two bytes 
+        let len = command.length;
+        if (len>=((1<<16))) {
+            throw new Error("Command exceeds maximum Length of 2^16 UTF8 Code points!");
+        } 
+        let high = len & 65280; // 0b 1111 1111 0000 0000
+        let low = len & 255; // 0b 0000 0000 1111 1111
         return Uint8Array.from([high, low]);
     }
 

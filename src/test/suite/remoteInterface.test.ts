@@ -80,4 +80,20 @@ suite('RemoteInterface Test Suite', () => {
 		});
 	}
 
+	test('Try start of debugging with too long file path',  async () => {
+		let portOffset = 6;
+		let _ = createListeningServer(hostName, tcpPort+portOffset);
+		let remoteInterface = new RemoteInterface(hostName, tcpPort+portOffset);
+		let tooLongPath = createReallyLongString();
+		await assert.rejects(remoteInterface.debug(tooLongPath));
+    });
+
+	function createReallyLongString(): string {
+		let string = "foobar";
+		for (let i = 0; i < 16; i++) {
+			string = string + string;
+		}
+		return string;
+	}
+
 });
