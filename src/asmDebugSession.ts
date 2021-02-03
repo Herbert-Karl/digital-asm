@@ -30,7 +30,7 @@ export class AsmDebugSession extends DebugSession {
     
     private static THREAD_ID = 1; // we do not support multiple threads
 
-    private debugger: AsmDebugger = new AsmDebugger();
+    private debugger!: AsmDebugger;
     private breakpointFactory: IBreakpointFactory | undefined = undefined;
 
     // used internaly to await/notify ourselves when the configuration is done and we can proceed with lauchning the debugger
@@ -39,12 +39,50 @@ export class AsmDebugSession extends DebugSession {
     public constructor() {
         super();
         this.setDebuggerIndexBase();
-        this.setUpEventListeners();
     }
 
     private setDebuggerIndexBase() {
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
+    }
+
+    // first request to the Debug Adapter, when starting debugging
+    // Debug Adpater returns information about which capabilities it implements
+    // a implemented feature is signaled by setting the corresponding flag as true
+    protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+        response = this.writeCapabilitiesIntoResponse(response);
+        this.sendResponse(response);
+    }
+
+    private writeCapabilitiesIntoResponse(response: DebugProtocol.InitializeResponse): DebugProtocol.InitializeResponse {
+        response.body = response.body || {}; // creates an empty response body, if the body was undefined
+        // check https://microsoft.github.io/debug-adapter-protocol/specification#capabilities for all possible capabilities
+        response.body.supportsConfigurationDoneRequest = true;
+        response.body.supportsRestartRequest = true;
+        response.body.supportsTerminateRequest = false;
+        response.body.supportsCancelRequest = false;
+        return response;
+    }
+
+    // function for starting the debugger
+    // our needed arguments are part of our extension for the LaunchRequestArguments
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
+        this.breakpointFactory = new AsmBreakpointFactory(args.pathToAsmFile, args.pathToAsmHexMapping);
+        this.debugger = new AsmDebugger(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.HostOfSimulator, args.PortOfSimulator);
+        this.setUpEventListeners();
+
+        if(args.setBreakpointsAtBRK) {
+            this.setBreakpointsAtBRK();
+        }
+
+        // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
+        this.sendEvent(new InitializedEvent());
+        // timeout given in millliseconds
+        await this.configurationDone.wait(10000);
+
+        this.debugger.start(args.stopOnEntry);
+
+        this.sendResponse(response); // response is just an acknowledgement
     }
 
     private setUpEventListeners() {
@@ -68,53 +106,6 @@ export class AsmDebugSession extends DebugSession {
         });
     }
 
-    // first request to the Debug Adapter, when starting debugging
-    // Debug Adpater returns information about which capabilities it implements
-    // a implemented feature is signaled by setting the corresponding flag as true
-    protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
-        response = this.writeCapabilitiesIntoResponse(response);
-        this.sendResponse(response);
-    }
-
-    private writeCapabilitiesIntoResponse(response: DebugProtocol.InitializeResponse): DebugProtocol.InitializeResponse {
-        response.body = response.body || {}; // creates an empty response body, if the body was undefined
-        // check https://microsoft.github.io/debug-adapter-protocol/specification#capabilities for all possible capabilities
-        response.body.supportsConfigurationDoneRequest = true;
-        response.body.supportsRestartRequest = true;
-        response.body.supportsTerminateRequest = false;
-        response.body.supportsCancelRequest = false;
-        return response;
-    }
-
-    // associated with the capability "supportsConfigurationDoneRequest"
-    protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
-		super.configurationDoneRequest(response, args);
-		this.configurationDone.notify();
-	}
-
-    // function for starting the debugger
-    // our needed arguments are part of our extension for the LaunchRequestArguments
-    // sets up our AsmDebugger
-    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ExtensionLaunchRequestArguments) {
-        this.breakpointFactory = new AsmBreakpointFactory(args.pathToAsmFile, args.pathToAsmHexMapping);
-        // passing the configuration into our asmDebugger to make it actually usable
-        this.debugger.config(args.pathToAsmFile, args.pathToHexFile, args.pathToAsmHexMapping, args.HostOfSimulator, args.PortOfSimulator);
-        if(args.setBreakpointsAtBRK) {
-            this.setBreakpointsAtBRK();
-        }
-
-        // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
-        this.sendEvent(new InitializedEvent());
-
-        // wait until configuration has finished (and configurationDoneRequest has been called)
-        // timeout given in millliseconds
-        await this.configurationDone.wait(10000);
-
-        this.debugger.start(args.stopOnEntry);
-
-        this.sendResponse(response); // response is just an acknowledgement
-    }
-
     private setBreakpointsAtBRK() {
         let brkMnemonicBasedBreakpoints = (this.breakpointFactory as AsmBreakpointFactory).createBreakpointForEachBrkMnemonic();
         brkMnemonicBasedBreakpoints.forEach(breakpoint => {
@@ -132,6 +123,12 @@ export class AsmDebugSession extends DebugSession {
     private createSource(filePath: string): Source {
         return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath));
     }
+
+    // associated with the capability "supportsConfigurationDoneRequest"
+    protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
+		super.configurationDoneRequest(response, args);
+		this.configurationDone.notify();
+	}
  
     // associated with the capability "supportsRestartRequest"
     protected restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request): void {

@@ -37,33 +37,16 @@ export class AsmDebugger extends EventEmitter {
     // for communicating with the digital simulator
     private remoteInterface: RemoteInterface;
 
-    // contructor for creating debugger and defining the important internal variables
-    // a call to config() should follow before using the debugger
-    // the returned object can already be used for setting up event listeners
-    public constructor() {
+    public constructor(pathToAsmFile: string, pathToHexFile: string, pathToMapFile: string, IPofSimulator: string, PortOfSimulator: number) {
         super();
 
         this.mapAddrToCodeLine= new Map<number, number>();
         this.breakpoints = new Array<AsmBreakpoint>();
 
-        // this is just a dummy remoteInterface, which shouldn't be used
-        this.remoteInterface = new RemoteInterface("localhost", 8080);
-    }
+        this.pathToAsmFile = pathToAsmFile;
+        this.pathToHexFile = pathToHexFile;
 
-    // function for defining the important internal variables
-    // which should be called before actually using this debugger
-    // params:
-    // Uris to the asmFile, hexFile and mappingFile
-    // a boolean controling, if BRK Statements are to be made into breakpoints for debugging
-    // expects:
-    // the hexFile is the parsed version of the asmFile
-    // the mappingFile contains a json array of hex addresses to asm codelines
-    public config(asm: string, hex: string, map: string, IPofSimulator: string, PortOfSimulator: number) {
-        this.pathToAsmFile = asm;
-        this.pathToHexFile = hex;
-
-        // loading the mapping of hex addresses to asm codelines
-        let rawdata = fs.readFileSync(map);
+        let rawdata = fs.readFileSync(pathToMapFile);
         let mapping: Array<{addr:number, line:number}> = JSON.parse(rawdata.toString('utf8'));
         mapping.forEach(elem => {
             this.mapAddrToCodeLine.set(elem.addr, elem.line);
