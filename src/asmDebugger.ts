@@ -20,19 +20,27 @@ import { EventEmitter } from 'events';
 import { RemoteInterface } from './remoteInterface';
 import { AsmBreakpoint } from "./asmBreakpoint";
 
+export enum AsmDebuggerEvent {
+    ERROR = 'error',
+    STOP_ON_ENTRY = 'stopOnEntry',
+    STOP_ON_STEP = 'stopOnStep', 
+    STOP_ON_BREAKPOINT = 'stopOnBreakpoint', 
+    PAUSE = 'pause'
+}
+
 export class AsmDebugger extends EventEmitter {
 
     // filesystem correct paths to the asm file and hex file
-    private pathToAsmFile: string = "";
-    private pathToHexFile: string = "";
+    private pathToAsmFile: string;
+    private pathToHexFile: string;
 
     // mapping of the addresses used/returned by the digital simulator to the corresponding code lines in the asm file
     private mapAddrToCodeLine: Map<number, number>;
 
     private breakpoints: AsmBreakpoint[];
 
-    private currentCodeLine = 0;
-    private numberOfNonBRKBreakpoints = 0;
+    private currentCodeLine: number;
+    private numberOfNonBRKBreakpoints: number;
 
     // for communicating with the digital simulator
     private remoteInterface: RemoteInterface;
@@ -42,6 +50,8 @@ export class AsmDebugger extends EventEmitter {
 
         this.mapAddrToCodeLine= new Map<number, number>();
         this.breakpoints = new Array<AsmBreakpoint>();
+        this.currentCodeLine = 0;
+        this.numberOfNonBRKBreakpoints = 0;
 
         this.pathToAsmFile = pathToAsmFile;
         this.pathToHexFile = pathToHexFile;
@@ -57,16 +67,16 @@ export class AsmDebugger extends EventEmitter {
 
     public start(stopOnEntry: boolean) {
         this.remoteInterface.debug(this.pathToHexFile)
-            .then((addr) => {
+            .then((_) => {
                 this.currentCodeLine = this.getFirstCodeLine();
                 if(stopOnEntry) {
-                    this.sendEvent('stopOnEntry');
+                    this.sendEvent(AsmDebuggerEvent.STOP_ON_ENTRY);
                 } else {
                     this.executeTillBreakpoint();
                 }
             })
             .catch((err) => {
-                this.sendEvent('error', err);
+                this.sendEvent(AsmDebuggerEvent.ERROR, err);
             });
     }
 
@@ -78,11 +88,11 @@ export class AsmDebugger extends EventEmitter {
 
     public stop() {
         this.remoteInterface.stop()
-            .then((addr) => {
-                this.sendEvent('pause');
+            .then((_) => {
+                this.sendEvent(AsmDebuggerEvent.PAUSE);
             })
             .catch((err) => {
-                this.sendEvent('error', err);
+                this.sendEvent(AsmDebuggerEvent.ERROR, err);
             });
     }
 
@@ -94,10 +104,10 @@ export class AsmDebugger extends EventEmitter {
         this.remoteInterface.step()
             .then((address) => {
                 this.updateCurrentCodeline(address);
-                this.sendEvent('stopOnStep');
+                this.sendEvent(AsmDebuggerEvent.STOP_ON_STEP);
             })
             .catch((err) => {
-                this.sendEvent('error', err);
+                this.sendEvent(AsmDebuggerEvent.ERROR, err);
             });
     }
 
@@ -121,10 +131,10 @@ export class AsmDebugger extends EventEmitter {
         this.remoteInterface.run()
             .then((address) => {
                 this.updateCurrentCodeline(address);
-                this.sendEvent('stopOnBreakpoint');
+                this.sendEvent(AsmDebuggerEvent.STOP_ON_BREAKPOINT);
             })
             .catch((err) => {
-                this.sendEvent('error', err);
+                this.sendEvent(AsmDebuggerEvent.ERROR, err);
             });
     }
 
@@ -136,7 +146,7 @@ export class AsmDebugger extends EventEmitter {
             try {
                 await this.executeSingleStepAndCheckForBreakpoint();
             } catch(err) {
-                this.sendEvent('error', err);
+                this.sendEvent(AsmDebuggerEvent.ERROR, err);
             }
         } 
     }
@@ -146,7 +156,7 @@ export class AsmDebugger extends EventEmitter {
         this.updateCurrentCodeline(address);
         if(this.isBreakpointAtCurrentCodeLine()) {
             this.loopSteps = false;
-            this.sendEvent('stopOnBreakpoint');
+            this.sendEvent(AsmDebuggerEvent.STOP_ON_BREAKPOINT);
         }
     }
 
@@ -185,8 +195,7 @@ export class AsmDebugger extends EventEmitter {
         return codeLine.indexOf(codeLine.trimLeft());
     }
 
-    // used events: error, stopOnEntry, stopOnStep, stopOnBreakpoint, pause
-    private sendEvent(event: string, ...args: any[]) {
+    private sendEvent(event: AsmDebuggerEvent, ...args: any[]) {
         // executes the given function asynchronously as soon as possible (next iteration of the nodeJs event loop)
         setImmediate(_ => {
             this.emit(event, ...args);

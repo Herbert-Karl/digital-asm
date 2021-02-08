@@ -18,7 +18,7 @@ import * as path from 'path';
 import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent, TerminatedEvent, OutputEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { ExtensionLaunchRequestArguments } from './extensionLaunchRequestArguments';
-import { AsmDebugger } from './asmDebugger';
+import { AsmDebugger, AsmDebuggerEvent } from './asmDebugger';
 import { AsmBreakpointFactory, IBreakpointFactory } from './asmBreakpointFactory';
 import { AsmBreakpoint } from './asmBreakpoint';
 const { Subject } = require('await-notify');
@@ -87,21 +87,21 @@ export class AsmDebugSession extends DebugSession {
 
     private setUpEventListeners() {
         // subscribing to the known events of our AsmDebugger
-        this.debugger.on('error', (err: Error) => {
+        this.debugger.on(AsmDebuggerEvent.ERROR, (err: Error) => {
             this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err.toString()));
             this.sendEvent(new OutputEvent("Debugging exited due to following error:\n"+err));
             this.sendEvent(new TerminatedEvent());
         });
-        this.debugger.on('stopOnEntry', () => {
+        this.debugger.on(AsmDebuggerEvent.STOP_ON_ENTRY, () => {
             this.sendEvent(new StoppedEvent('entry', AsmDebugSession.THREAD_ID));
         });
-        this.debugger.on('stopOnStep', () => {
+        this.debugger.on(AsmDebuggerEvent.STOP_ON_STEP, () => {
             this.sendEvent(new StoppedEvent('step', AsmDebugSession.THREAD_ID));
         });
-        this.debugger.on('stopOnBreakpoint', () => {
+        this.debugger.on(AsmDebuggerEvent.STOP_ON_BREAKPOINT, () => {
             this.sendEvent(new StoppedEvent('breakpoint', AsmDebugSession.THREAD_ID));
         });
-        this.debugger.on('pause', () => {
+        this.debugger.on(AsmDebuggerEvent.PAUSE, () => {
             this.sendEvent(new StoppedEvent('pause', AsmDebugSession.THREAD_ID));
         });
     }
