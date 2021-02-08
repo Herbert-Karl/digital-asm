@@ -119,13 +119,13 @@ export class RemoteInterface {
     }
 
     private static createSocketMessage(command: string): Uint8Array {
-        let convertedCommand = new TextEncoder().encode(command);
+        let encodedCommand = new TextEncoder().encode(command);
         // the DataOutputStream/DataInputStream used in java-based simulator has a special need:
         // the length of the data send/to be send, prefixed to the data itself as two bytes 
-        let length = RemoteInterface.getUTF8ByteLength(convertedCommand);
-        let message = new Uint8Array(length.length+convertedCommand.length);
+        let length = RemoteInterface.getUTF8ByteLength(encodedCommand);
+        let message = new Uint8Array(length.length+encodedCommand.length);
         message.set(length);
-        message.set(convertedCommand, length.length);
+        message.set(encodedCommand, length.length);
         return message;
     }
 
@@ -144,27 +144,20 @@ export class RemoteInterface {
         if(!RemoteInterface.isPositiveResponse(responseString)) {
             throw new Error("Error received from simulator: " + responseString);
         }
-        return RemoteInterface.getAddress(responseString);
+        return RemoteInterface.convertResponseStringToNumber(responseString);
     }
 
     private static isPositiveResponse(response: string): boolean {
         return response.substr(2,2)==="ok" || response.substr(2,3)==="ok:";
     }
 
-    // function for converting the response string from digital, which contains the current address, into a usable number
-    // params:
-    // a string, being a positive response from digital
-    // returns:
-    // the address contained in the response as base 10 number or -1 if no number was present
-    private static getAddress(response: string): number {
+    private static convertResponseStringToNumber(response: string): number {
         if(response.length===4) {
-            // this was only a conformation response without an address
-            // as such, we have no number to compute and return -1
+            // this was only a conformation response without an address, as such, we have no number to compute and return -1
             return -1;
         }
         else {
-            // we slice the first 5 bytes away, as they are not part of the number
-            // then we parse the string representing a base 16 number 
+            // we slice the first 5 bytes away, as they are not part of the number then parse the rest representing a base 16 number 
             return parseInt(response.substr(5), 16);
         }
     }

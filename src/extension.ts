@@ -30,74 +30,50 @@ export function activate(context: vscode.ExtensionContext) {
         ExtensionSettings.updateValuesFromWorkspaceConfiguration();
     });
 
-    // registering commands
-    let parseAsm = vscode.commands.registerCommand('digital-asm.parse-asm', commandFrame(commandParseAsm));
-    let runAsm = vscode.commands.registerCommand('digital-asm.execute-asm', commandFrame(commandRunAsm));
-    //
+    let parseAsm = vscode.commands.registerCommand('digital-asm.parse-asm', commandWrapper(commandParseAsm));
+    let runAsm = vscode.commands.registerCommand('digital-asm.execute-asm', commandWrapper(commandRunAsm));
     let deriveFile = vscode.commands.registerCommand('digital-asm.getFile', () => {
         return inferTargetFileFromActiveEditor().fsPath;
     });
 
-    // registering our provider for completions
-    let completionProvider = vscode.languages.registerCompletionItemProvider('asm', new AsmCompletionItemProvider());
-
-    // registering our provider for hovers
+    let completionItemProvider = vscode.languages.registerCompletionItemProvider('asm', new AsmCompletionItemProvider());
     let hoverProvider = vscode.languages.registerHoverProvider('asm', new AsmHoverProvider());
-
-    // passing our debug configuration provider for our debugger type
     let asmDebugConfigProvider = vscode.debug.registerDebugConfigurationProvider('digital-conn', new AsmDebugConfigurationProvider());
 
-    // creating our tracker object for our asm debug session
-    let tracker = vscode.debug.registerDebugAdapterTrackerFactory('digital-conn', new AsmDebugTrackerFactory());
+    let trackerFactory = vscode.debug.registerDebugAdapterTrackerFactory('digital-conn', new AsmDebugTrackerFactory());
 
     // adding the implementation of the commands to the context of the extension,
     //so that the implementations will be executed, when the commands are called
     context.subscriptions.push(parseAsm, runAsm, deriveFile);
 
     // adding our providers to the context of the extension
-    context.subscriptions.push(completionProvider, hoverProvider, asmDebugConfigProvider, tracker);
+    context.subscriptions.push(completionItemProvider, hoverProvider, asmDebugConfigProvider, trackerFactory);
 
 }
 
 export function deactivate() {}
 
-// function implementing the parsing of a .asm file into a .hex file
-// for this, the function uses spawns a child process which executes the jar file with the given asm file
-// we wait for the process to finish in order to ensure that following steps have the .hex and .lst files written to the file system
-// params:
-// the function takes the file, that shall be parsed, as a TextDocument
-// return:
-// if there is an error, an error is thrown
-// if the function ended successful, `null` will be returned
 // expects:
 // TextDocument is a .asm file
-function commandParseAsm(td: vscode.TextDocument) {
+function commandParseAsm(asmFile: vscode.TextDocument) {
     try {
-        let pathToAsm = td.uri.path;
-        let child = spawnSync('java', ["-jar", ExtensionSettings.asm3JarPath, pathToAsm]);
+        let pathToAsm = asmFile.uri.path;
+        // we wait for the process to finish in order to ensure that following steps have the .hex and .lst files written to the file system
+        let _ = spawnSync('java', ["-jar", ExtensionSettings.asm3JarPath, pathToAsm]); 
     } catch (ex) {
         notifyUserAboutError(ex);
         throw ex;
     }
 }
 
-// function implementing the execution of a .asm file
-// for this, the function uses a remoteInterface to access the digital simulator
-// the .asm file is parsed before running it
-// params:
-// the function takes the file, that shall be run, as a TextDocument
-// return:
-// if there is an error, an error is thrown
-// if the function ended successful, `null` will be returned
-// futhermore the content of the file will start to run in the digitial simulator
 // expects:
 // TextDocument is a .asm file
-// digital simulator program is run on the local machine
-function commandRunAsm(td: vscode.TextDocument) {
+// digital simulator program is run on the local machine (true?)
+function commandRunAsm(asmFile: vscode.TextDocument) {
     try {
-        commandParseAsm(td);
+        commandParseAsm(asmFile);
         
-        let hexPath = td.uri.fsPath.replace(".asm", ".hex");
+        let hexPath = asmFile.uri.fsPath.replace(".asm", ".hex");
 
         let remoteInterface = new RemoteInterface(ExtensionSettings.simulatorHost, ExtensionSettings.simulatorPort);
         remoteInterface.start(hexPath)
@@ -116,7 +92,7 @@ function commandRunAsm(td: vscode.TextDocument) {
 // function implementing the command, which shall be executed with the given file
 // return:
 // an asyncronise function which wraps the command with checks for the given Uri, language of the File and the asm3 jar file
-function commandFrame(command: (td: vscode.TextDocument) => void): (Uri: vscode.Uri, ) => Promise<void> {
+function commandWrapper(command: (td: vscode.TextDocument) => void): (Uri: vscode.Uri, ) => Promise<void> {
     return async function(Uri: vscode.Uri) {
         if(Uri===undefined) {
             Uri = inferTargetFileFromActiveEditor();
@@ -144,7 +120,6 @@ function commandFrame(command: (td: vscode.TextDocument) => void): (Uri: vscode.
 function inferTargetFileFromActiveEditor(): vscode.Uri {
     let activeTextEditor = vscode.window.activeTextEditor;
     if(activeTextEditor===undefined) {
-        // if there is neither a given URI nor an active text editor, we stop while showing an error message
         let noFileToBeInferedError = new Error("No active file to use for debugging.");
         notifyUserAboutError(noFileToBeInferedError);
         throw noFileToBeInferedError;
