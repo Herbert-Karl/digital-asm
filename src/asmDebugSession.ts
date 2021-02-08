@@ -72,7 +72,7 @@ export class AsmDebugSession extends DebugSession {
         this.setUpEventListeners();
 
         if(args.setBreakpointsAtBRK) {
-            this.setBreakpointsAtBRK();
+            this.setBreakpointsAtBRKMnemonics();
         }
 
         // annouces to the development tool that our debug adapter is ready to accept configuration requests like breakpoints
@@ -86,7 +86,6 @@ export class AsmDebugSession extends DebugSession {
     }
 
     private setUpEventListeners() {
-        // subscribing to the known events of our AsmDebugger
         this.debugger.on(AsmDebuggerEvent.ERROR, (err: Error) => {
             this.sendEvent(new StoppedEvent('error', AsmDebugSession.THREAD_ID, err.toString()));
             this.sendEvent(new OutputEvent("Debugging exited due to following error:\n"+err));
@@ -106,7 +105,7 @@ export class AsmDebugSession extends DebugSession {
         });
     }
 
-    private setBreakpointsAtBRK() {
+    private setBreakpointsAtBRKMnemonics() {
         let brkMnemonicBasedBreakpoints = (this.breakpointFactory as AsmBreakpointFactory).createBreakpointForEachBrkMnemonic();
         brkMnemonicBasedBreakpoints.forEach(breakpoint => {
             this.sendEvent(
@@ -136,8 +135,6 @@ export class AsmDebugSession extends DebugSession {
         this.sendResponse(response); // response is just an acknowledgement that the request has been done
 	}
 
-    // override of the default implementation of the function
-    // sets the breakpoints for the program, previous breakpoints shall be discarded
     // the request contains all expected breakpoints
     // the response must return information about all actual created breakpoints
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): void {
@@ -200,36 +197,39 @@ export class AsmDebugSession extends DebugSession {
     // request for all threads in the current debugger state
     // we support/use only one thread
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
-		response.body = {
+		response = this.includeThreadInformation(response);
+        this.sendResponse(response);
+	}
+    
+    private includeThreadInformation(response: DebugProtocol.ThreadsResponse): DebugProtocol.ThreadsResponse {
+        response.body = {
 			threads: [
 				new Thread(AsmDebugSession.THREAD_ID, "thread 1")
 			]
 		};
-        this.sendResponse(response);
-	}
-    
+        return response;
+    }
+
     // request for the stackFrames of the referenced thread
     // the stackFrame contains the information, which line the program is currently at
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request): void {
         let startFrame = typeof args.startFrame === 'number' ? args.startFrame : 0;
         let endFrame = startFrame + (typeof args.levels === 'number' ? args.levels : 1);
         
-        let stk = this.debugger.stack(startFrame, endFrame);
+        let debuggerStack = this.debugger.stack(startFrame, endFrame);
 
         // converting the returned quasi stackFrames into proper ones
-        let properStk = stk.map(f => new StackFrame(f.id, f.name, this.createSource(f.source), f.line, f.column));
+        let properStack = debuggerStack.map(f => new StackFrame(f.id, f.name, this.createSource(f.source), f.line, f.column));
         response.body = {
-            totalFrames: properStk.length,
-            stackFrames: properStk
+            totalFrames: properStack.length,
+            stackFrames: properStack
         };
         
         this.sendResponse(response);
     }
 
     /*
-        requests for Scopes, Variables, Attatch, Evaluate and Source aren't implemented (empty base implementation used)
-        because we do not support these things
+        requests for Scopes, Variables, Attatch, Evaluate and Source aren't implemented (empty base implementation used) because we do not support these things
         but those things can't be defined via the capabilities, so we can't explicitly forbid such requests
     */
-
 }
