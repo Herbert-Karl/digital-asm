@@ -23,14 +23,18 @@ export class AsmHoverProvider implements vscode.HoverProvider {
 
     constructor() {
         this.mnemonicToHover = new Map<string, vscode.Hover>();
-        this.createHovers()
+        this.createHovers();
     }
 
     private createHovers() {
         mnemonicsArray.forEach((elem: AsmMnemonic) => {
-            let newHover = new vscode.Hover(elem.detail + "\n\n" + elem.doc);
+            let newHover = new vscode.Hover(this.constructHoverText(elem.detail, elem.doc));
             this.mnemonicToHover.set(elem.label, newHover);
         });
+    }
+
+    private constructHoverText(header: string, body:string): string {
+        return header + "\n\n" + body;
     }
 
     public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
