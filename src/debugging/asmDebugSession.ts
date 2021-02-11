@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import * as path from 'path';
 import { DebugSession, StoppedEvent, StackFrame, Source, Breakpoint, InitializedEvent, Thread, BreakpointEvent, TerminatedEvent, OutputEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { ExtensionLaunchRequestArguments } from '../extensionLaunchRequestArguments';
+import { ExtensionLaunchRequestArguments } from './extensionLaunchRequestArguments';
 import { AsmDebugger, AsmDebuggerEvent } from './asmDebugger';
 import { AsmBreakpointFactory, IBreakpointFactory } from './asmBreakpointFactory';
 import { AsmBreakpoint } from './asmBreakpoint';
