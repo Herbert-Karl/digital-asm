@@ -28,11 +28,12 @@ export class AsmCompletionItemProvider implements vscode.CompletionItemProvider 
 
     private createCompletionItems() {
         mnemonicsArray.forEach((elem: AsmMnemonic) => {
-            this.mnemonicCompletionItems.push(this.createCompletionItemFromAsmMnemonic(elem, vscode.CompletionItemKind.Keyword));
+            this.mnemonicCompletionItems.push(this.createCompletionItemFromAsmMnemonic(elem));
         });
     }
 
-    private createCompletionItemFromAsmMnemonic(element: AsmMnemonic, itemKind: vscode.CompletionItemKind) {
+    private createCompletionItemFromAsmMnemonic(element: AsmMnemonic) {
+        let itemKind = vscode.CompletionItemKind.Keyword;
         let newCompletionItem = new vscode.CompletionItem(element.label, itemKind);
         newCompletionItem.detail = element.detail;
         newCompletionItem.documentation = element.doc;

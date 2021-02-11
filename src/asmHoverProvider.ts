@@ -19,18 +19,22 @@ import { mnemonicsArray, AsmMnemonic } from './mnemonics';
 
 export class AsmHoverProvider implements vscode.HoverProvider {
 
-    private mnemonicToHover: Map<string, vscode.Hover>;
+    private hoversForMnemonics: Map<string, vscode.Hover>;
 
     constructor() {
-        this.mnemonicToHover = new Map<string, vscode.Hover>();
-        this.createHovers();
+        this.hoversForMnemonics = new Map<string, vscode.Hover>();
+        this.createMnemonicHovers();
     }
 
-    private createHovers() {
+    private createMnemonicHovers() {
         mnemonicsArray.forEach((elem: AsmMnemonic) => {
-            let newHover = new vscode.Hover(this.constructHoverText(elem.detail, elem.doc));
-            this.mnemonicToHover.set(elem.label, newHover);
+            let newHover = this.createHoverForAsmMnemonic(elem);
+            this.hoversForMnemonics.set(elem.label, newHover);
         });
+    }
+
+    private createHoverForAsmMnemonic(element: AsmMnemonic): vscode.Hover {
+        return new vscode.Hover(this.constructHoverText(element.detail, element.doc));
     }
 
     private constructHoverText(header: string, body:string): string {
@@ -40,6 +44,6 @@ export class AsmHoverProvider implements vscode.HoverProvider {
     public provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
         let wordRange = document.getWordRangeAtPosition(position);
         let focusedWord = document.getText(wordRange);
-        return this.mnemonicToHover.get(focusedWord);
+        return this.hoversForMnemonics.get(focusedWord);
     }
 }

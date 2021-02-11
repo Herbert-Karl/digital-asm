@@ -22,25 +22,30 @@ import * as vscode from 'vscode';
 class AsmDebugTracker implements vscode.DebugAdapterTracker {
 
     private outputChannel: vscode.OutputChannel;
+    private readonly CHANNEL_NAME: string = "digital-asm Debug Adapter Protocol";
 
     constructor() {
-        this.outputChannel = vscode.window.createOutputChannel("digital-asm Debug Adapter Protocol");
+        this.outputChannel = vscode.window.createOutputChannel(this.CHANNEL_NAME);
     }
 
     public onWillStartSession() {
-        this.outputChannel.appendLine("Session with debug adapter starting ...");
+        this.writeToOutputChannel("Session with debug adapter starting ...");
     }
 
     public onWillReceiveMessage(message: any) {
-        this.outputChannel.appendLine("Message from VS Code: " + JSON.stringify(message));
+        this.writeToOutputChannel("Message from VS Code: " + JSON.stringify(message));
     }
 
     public onDidSendMessage(message: any) {
-        this.outputChannel.appendLine("Message from Debug Adapter: " + JSON.stringify(message));
+        this.writeToOutputChannel("Message from Debug Adapter: " + JSON.stringify(message));
     }
 
     public onWillStopSession() {
-        this.outputChannel.appendLine("Session with debug adapter ended.");
+        this.writeToOutputChannel("Session with debug adapter ended.");
+    }
+
+    private writeToOutputChannel(message: string) {
+        this.outputChannel.appendLine(message);
     }
 
     dispose() {
