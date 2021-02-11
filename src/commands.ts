@@ -1,7 +1,7 @@
 import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { RemoteInterface } from './remoteInterface';
+import { RemoteInterface } from './debugging/remoteInterface';
 import { ExtensionSettings } from './extensionSettings';
 import { inferTargetFileFromActiveEditor, notifyUserAboutError, isSupportedLanguage } from './utility';
 
