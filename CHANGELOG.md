@@ -2,7 +2,7 @@
 
 All notable changes to the "digital-asm" extension will be documented in this file.
 
-## 0.7.0 - 03.02.2021
+## 0.7.0 - 02.03.2021
 
 * updated dependencies
 * internal improvements to test suite
