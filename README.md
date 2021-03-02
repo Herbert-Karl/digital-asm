@@ -6,6 +6,8 @@ This VS Code extension provides support for Assembler files for the _digital log
 It started as part of a study work at the DHBW Mosbach in Spring 2020. 
 The extension is licensed unter GPLv3.
 
+The extension was previously published under [Herbert-Karl.digital-asm](https://marketplace.visualstudio.com/items?itemName=Herbert-Karl.digital-asm), but I lost access to that publisher account. That version should be seen as legacy / deprecated.
+
 ## Features
 
 * Language Grammar Definition for the Assembler
